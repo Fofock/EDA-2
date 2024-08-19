@@ -12,9 +12,13 @@ def BubbleSortOptimizado(A):
     n = len(A)
     #Ramge llega hasta n sin tomar n 
     for i in range(n-1):
+        orden = True
         for j in range(n-1-i):
             if A[j] >  A[j+1]:
+                orden = False
                 A[j], A[j+1] = A[j+1], A[j]
+        if orden == True:
+            break
                 
 def MergeSort(A,p,r):
     #Verificamos que la lista sea mayor a un elemento 
@@ -86,16 +90,21 @@ def MergeInverso(A,p,q,r):
     
 A = [4,3,2,5,1]            
 B = A[:] #Funcion splice
+C = A[:]
 """for i in range(100):
     A.append(random.randint(1,10))"""
 
 print("Desordenado", A)
-BubbleSortOptimizado(A)
+BubbleSort(A)
 print("Ordenado", A)
 
 print("Desordenado", B)
-MergeSort(B,0,len(B)-1)
+BubbleSortOptimizado(B)
 print("Ordenado", B)
+
+print("Desordenado", C)
+MergeSort(C,0,len(C)-1)
+print("Ordenado", C)
 
 
 #Un analisis de complejidad me mide como se comporta el algoritmo dependeiendo de la cantidad de entrada de datos, no mide velocidad
