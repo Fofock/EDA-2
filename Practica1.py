@@ -1,5 +1,6 @@
 import random
 import time
+import matplotlib.pyplot as plt
 #Desarrollar los explciaciones de los algoritmos de ordenamiento de este modulo
 
 def BubbleSort(A):
@@ -111,6 +112,28 @@ def TimepoPromedio(arrTiempos, algoritmo, elemetos):
     n = len(elemetos)
     t = (sum(arrTiempos) / 3)
     print(f"El tiempo promedio del algoritmo {algoritmo} para {n} elementos es {t} sgundos" )
+    return t
+
+def graficas(TBSG, TBSOG, TMSG, elementos):
+    # Graficar los tiempos de ejecución para Bubble Sort
+    plt.plot(elementos, TBSG, label="Bubble Sort", color="red", marker='o')
+    
+    # Graficar los tiempos de ejecución para Bubble Sort Optimizado
+    plt.plot(elementos, TBSOG, label="Bubble Sort Optimizado", color="blue", marker='x')
+    
+    # Graficar los tiempos de ejecución para Merge Sort
+    plt.plot(elementos, TMSG, label="Merge Sort", color="green", marker='s')
+    
+    # Configurar la gráfica
+    plt.xlabel("Número de elementos")
+    plt.ylabel("Tiempo de ejecución (s)")
+    plt.title("Comparación de tiempos de ejecución entre algoritmos")
+    plt.legend()
+    plt.grid(True)
+    
+    # Mostrar la gráfica
+    plt.show()
+
 
 
 def ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, elementos):       
@@ -141,21 +164,28 @@ def ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge
         medirMerges(MergeSort, C, 0, len(C) - 1, Tiempos_Merge_Sort)
         #print("Ordenado", C)
     
-    TimepoPromedio(Tiempos_Bubble_Sort, "Bubble Sort", A)
-    TimepoPromedio(Tiempos_Bubble_Sort_Optimizado, "Bubble Sort Optimizado",B)
-    TimepoPromedio(Tiempos_Merge_Sort, "Merge Sort", C)
-
+    TBSG.append(TimepoPromedio(Tiempos_Bubble_Sort, "Bubble Sort", A))
+    TBSOG.append(TimepoPromedio(Tiempos_Bubble_Sort_Optimizado, "Bubble Sort Optimizado",B))
+    TMSG.append(TimepoPromedio(Tiempos_Merge_Sort, "Merge Sort", C))
+    Tiempos_Bubble_Sort = []
+    Tiempos_Bubble_Sort_Optimizado = []
+    Tiempos_Merge_Sort = []
+    
+TBSG = []
+TBSOG = []
+TMSG = []
 Tiempos_Bubble_Sort = []
 Tiempos_Bubble_Sort_Optimizado = []
 Tiempos_Merge_Sort = []
-
+valores_X = [500, 1000, 5000, 10000, 20000]
 def main():
     ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 500 )
     ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 1000)
     ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 5000)
     ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 10000)
     ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 20000)
-
+    graficas(TBSG, TBSOG, TMSG, valores_X)
+    
 main()
     
 
