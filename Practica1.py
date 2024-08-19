@@ -113,24 +113,20 @@ def TimepoPromedio(arrTiempos, algoritmo, elemetos):
     print(f"El tiempo promedio del algoritmo {algoritmo} para {n} elementos es {t} sgundos" )
 
 
-def ejecucion():       
+def ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, elementos):       
     A = []            
-    LlenarArreglo(A,10,0,10)
-    """
+    LlenarArreglo(A,elementos,-100,100)
+    
     #Mejor de los casos
     A.sort()
-    """
     
     """
     #Peor de los casos
     MergeSortInverso(A, 0, len(A) - 1 )
-    """ 
+    """
+    
     B = A[:] #Funcion splice
     C = A[:] #Funcion splice
-    
-    Tiempos_Bubble_Sort = []
-    Tiempos_Bubble_Sort_Optimizado = []
-    Tiempos_Merge_Sort = []
 
     for i in range(4):
         #print("Desordenado", A)
@@ -149,7 +145,19 @@ def ejecucion():
     TimepoPromedio(Tiempos_Bubble_Sort_Optimizado, "Bubble Sort Optimizado",B)
     TimepoPromedio(Tiempos_Merge_Sort, "Merge Sort", C)
 
-ejecucion()
+Tiempos_Bubble_Sort = []
+Tiempos_Bubble_Sort_Optimizado = []
+Tiempos_Merge_Sort = []
+
+def main():
+    ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 500 )
+    ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 1000)
+    ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 5000)
+    ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 10000)
+    ejecucion(Tiempos_Bubble_Sort, Tiempos_Bubble_Sort_Optimizado, Tiempos_Merge_Sort, 20000)
+
+main()
+    
 
 
 
