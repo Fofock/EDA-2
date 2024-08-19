@@ -113,12 +113,21 @@ def TimepoPromedio(arrTiempos, algoritmo, elemetos):
     print(f"El tiempo promedio del algoritmo {algoritmo} para {n} elementos es {t} sgundos" )
 
 
-def main():       
+def ejecucion():       
     A = []            
     LlenarArreglo(A,10,0,10)
+    """
+    #Mejor de los casos
+    A.sort()
+    """
+    
+    """
+    #Peor de los casos
+    MergeSortInverso(A, 0, len(A) - 1 )
+    """ 
     B = A[:] #Funcion splice
     C = A[:] #Funcion splice
-
+    
     Tiempos_Bubble_Sort = []
     Tiempos_Bubble_Sort_Optimizado = []
     Tiempos_Merge_Sort = []
@@ -140,7 +149,7 @@ def main():
     TimepoPromedio(Tiempos_Bubble_Sort_Optimizado, "Bubble Sort Optimizado",B)
     TimepoPromedio(Tiempos_Merge_Sort, "Merge Sort", C)
 
-main()
+ejecucion()
 
 
 
