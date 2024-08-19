@@ -1,4 +1,5 @@
 import random
+import time
 #Desarrollar los explciaciones de los algoritmos de ordenamiento de este modulo
 
 def BubbleSort(A):
@@ -12,10 +13,11 @@ def BubbleSortOptimizado(A):
     n = len(A)
     #Ramge llega hasta n sin tomar n 
     for i in range(n-1):
-        orden = True
+        #Condición para romper el ciclo si ya esta ordenado el arreglo
+        orden = True  
         for j in range(n-1-i):
             if A[j] >  A[j+1]:
-                orden = False
+                orden = False #Si no entra aqui quiere decir que ya esta ordenado el arreglo en esa pasada
                 A[j], A[j+1] = A[j+1], A[j]
         if orden == True:
             break
@@ -85,26 +87,62 @@ def MergeInverso(A,p,q,r):
             A[k] = der[j]
             j += 1            
         
-        
-        
+def LlenarArreglo(arreglo,n,LimiteI, LimiteS):
+    for i in range(n):
+        arreglo.append(random.randint(LimiteI, LimiteS)) #Rango de los numeros
+
+def medirBubbles(fn, arreglo, arrTiempos):
+    Ti = time.perf_counter()
+    fn(arreglo)
+    Tf = time.perf_counter()
+    Tt = Tf - Ti
+    #print(f"El algoritmo tardo {Tt} segundos en ordenar la lista" )
+    arrTiempos.append(Tt)
+
+def medirMerges(fn,arreglo,p,r, arrTiempos):
+    Ti = time.perf_counter()
+    fn(arreglo,p,r)
+    Tf = time.perf_counter()
+    Tt = Tf - Ti
+    #print(f"El algoritmo tardo {Tt} segundos en ordenar la lista" )
+    arrTiempos.append(Tt)
+
+def TimepoPromedio(arrTiempos, algoritmo, elemetos):
+    n = len(elemetos)
+    t = (sum(arrTiempos) / 3)
+    print(f"El tiempo promedio del algoritmo {algoritmo} para {n} elementos es {t} sgundos" )
+
+
+def main():       
+    A = []            
+    LlenarArreglo(A,10,0,10)
+    B = A[:] #Funcion splice
+    C = A[:] #Funcion splice
+
+    Tiempos_Bubble_Sort = []
+    Tiempos_Bubble_Sort_Optimizado = []
+    Tiempos_Merge_Sort = []
+
+    for i in range(4):
+        #print("Desordenado", A)
+        medirBubbles(BubbleSort, A, Tiempos_Bubble_Sort)
+        #print("Ordenado", A)
+
+        #print("Desordenado", B)
+        medirBubbles(BubbleSortOptimizado, B, Tiempos_Bubble_Sort_Optimizado)
+        #print("Ordenado", B)
+
+        #print("Desordenado", C)
+        medirMerges(MergeSort, C, 0, len(C) - 1, Tiempos_Merge_Sort)
+        #print("Ordenado", C)
     
-A = [4,3,2,5,1]            
-B = A[:] #Funcion splice
-C = A[:]
-"""for i in range(100):
-    A.append(random.randint(1,10))"""
+    TimepoPromedio(Tiempos_Bubble_Sort, "Bubble Sort", A)
+    TimepoPromedio(Tiempos_Bubble_Sort_Optimizado, "Bubble Sort Optimizado",B)
+    TimepoPromedio(Tiempos_Merge_Sort, "Merge Sort", C)
 
-print("Desordenado", A)
-BubbleSort(A)
-print("Ordenado", A)
+main()
 
-print("Desordenado", B)
-BubbleSortOptimizado(B)
-print("Ordenado", B)
 
-print("Desordenado", C)
-MergeSort(C,0,len(C)-1)
-print("Ordenado", C)
 
 
 #Un analisis de complejidad me mide como se comporta el algoritmo dependeiendo de la cantidad de entrada de datos, no mide velocidad
