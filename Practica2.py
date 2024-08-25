@@ -1,7 +1,7 @@
 import time 
 import random
 import sys
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 sys.setrecursionlimit(1_000_000) #LIMITE DE RECURSIVIDAD
 #SELECCIONA PIVOTE, MENORES A LA IZQUIERDA, MAYORES A LA DERECHA
@@ -119,12 +119,14 @@ def graficas(TQSG, TQSRG, THSG, elementos):
 
 def ejecucion(elementos):       
     A = []   
+    
+    LlenarArreglo(A,elementos, 0, 10)
+    
     #Mejor de los casos
-    A.sort
+    #A.sort
     #Peor de los casos 
     #A.sort(reverse=True)
     
-    LlenarArreglo(A,elementos, 0, 10)
     B = A[:] #Funcion splice
     C = A[:] #Funcion splice
     Tiempos_Quick_Sort = []
@@ -133,31 +135,32 @@ def ejecucion(elementos):
     for i in range(4):
         #print("Desordenado", A)
         medirQuicks(QuickSort, A, 0, len(A)-1, Tiempos_Quick_Sort)
-        #print("Ordenado", A)
+        #print("Ordenado por Quick Sort", A)
 
         #print("Desordenado", B)
         medirQuicks(RandQuickSort, B, 0, len(B)-1, Tiempos_Quick_Sort_Random)
-        #print("Ordenado", B)
+        #print("Ordenado por Random Quick Sort", B)
 
         #print("Desordenado", C)
         medirHeap(HeapSort, C, Tiempos_Heap_Sort)
-        #print("Ordenado", C)
+        #print("Ordenado por Heap Sort", C)
     
     TQSG.append(TimepoPromedio(Tiempos_Quick_Sort, "Quick Sort", A))
     TQSRG.append(TimepoPromedio(Tiempos_Quick_Sort_Random, "Quick Sort Random",B))
     THSG.append(TimepoPromedio(Tiempos_Heap_Sort, "Heap Sort", C))   
 
 def main():
-    ejecucion(500)
+    #ejecucion(10)
     ejecucion(1000)
     ejecucion(5000)
     ejecucion(10000)
     ejecucion(20000)
+    
     graficas(TQSG, TQSRG, THSG, valores_X)
     
 TQSG = []
 TQSRG = []
 THSG = []
-valores_X = [500, 1000, 5000, 10000, 20000]
+valores_X = [1000, 5000, 10000, 20000]
 main()
 
