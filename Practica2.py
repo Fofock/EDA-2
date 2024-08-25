@@ -24,6 +24,31 @@ def Particionar(A, p, r):
 def LlenarArreglo(arreglo,n,LimiteI, LimiteS):
     for i in range(n):
         arreglo.append(random.randint(LimiteI, LimiteS)) 
+        
+
+def HeapSort(A):
+    MaxHeapInit(A)
+    n = len(A)
+    for i in range(n-1, 1, -1):
+        A[0], A[i] = A[i], A[0]
+        n = n-1
+        MaxHeapify(A, i, n)
+
+def MaxHeapify(A, i, n):
+    L = 2(i) + 1
+    R = 2(i) + 2
+    posMAx = None
+    if L < n and A[L] > A[i]:
+        posMAx = L
+    else:
+        posMAx = i
+    if R < n and A[R] > A[posMAx]:
+        posMAx = R
+    if posMAx != i:
+        A[i], A[posMAx] = A[posMAx], A[i]
+        MaxHeapify(A, posMAx, n)
+        
+        
 
 def main():
     A = []
