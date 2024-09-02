@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 def CountingSort(A):
     #SE CALCULA EL VALOR MAXIMO DEL ARREGLO
     k = max(A)
-    print(f"El valor de k es: {k}")
     C = []
     B = [] 
     #FORMAMOS EL ARREGLO AUXILIAR C, DE TAMAÑO K EN EL CUAL SE ALMACENARÁ LA FRECUENCIA DE APARICIÓN DE UN VALOR EN EL INDICE CON EL MISMO VALOR, ADEMÁS EN ESTE ARREGLO AUXILIAR INICIALIZAMOS TODOS SUS INDICES EN 0
@@ -99,12 +98,18 @@ def TimepoPromedio(arrTiempos, algoritmo, elemetos):
 def ejecucion(elementos):       
     A = []   
     
-    LlenarArreglo(A,elementos, 0, 10)
-    
     #Mejor de los casos
-    #A.sort
+    x = 10 
+    
     #Peor de los casos 
-    #A.sort(reverse=True)
+    #x = elementos * 1000
+    
+    #Caso Promedio
+    #x = elementos
+    
+    LlenarArreglo(A,elementos, 0, x)
+    k = max(A)
+    print(f"El valor de k es: {k}")
     
     B = A[:] #Funcion splice
     Tiempos_CountingSort = []
