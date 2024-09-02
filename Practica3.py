@@ -148,8 +148,46 @@ def graficas(TCSG, TRSG, elementos):
     
     # Mostrar la gráfica
     plt.show()
+
+def CountigSort_RadixSort_Cadenas(A, b, digito):
+    C = []
+    B = [] 
+    for i in range (b): 
+        C.append(0)
     
+    for i in range (len(A)):
+        B.append(0)
+        
+    for j in range(len(A)):
+
+        cifra = ord(ObtenerCaracter(A[j], digito)) #Convertimos el valor a ASCII con el ord
+        C[cifra] = C[cifra] + 1
+        
+    for i in range(1, b):
+        C[i] = C[i] + C[i-1]
+        
+    for j in range(len(A)-1, -1, -1):
+        cifra = ord(ObtenerCaracter(A[j], digito))
+        B[C[cifra]-1] = A[j]
+        C[cifra] -= 1
+
+    for j in range(len(A)):
+        A[j] = B[j]
     
+    return A    
+
+def RadixSort_Cadenas(A):
+    k = max(len(s) for s in A) #ENCUENTRA LA CADENA DE TEXTO MAS GRANDE DENTRO DEL ARREGLO DE CADENAS 
+    for i in range(k-1, -1, -1): 
+        CountigSort_RadixSort_Cadenas(A, 256, i)    
+    return A
+
+def ObtenerCaracter(cadena, i):
+    if i < len(cadena):
+        return cadena[i] #Retorna el caracter en la posiscion i de la cadena, recordar que si bien arriba le pasamos un indice y pdoriasmos pensar que le estamos pasando un solo valor no es asi, le pasamos una cadena, ya que en ese indice tenemos alojada toda una cadena y no solo un caracter
+    else:
+        return ' ' 
+        
 def main():
     ejecucion(5000)
     ejecucion(10000)
@@ -162,3 +200,9 @@ if __name__ == "__main__":
     TCSG = []
     TRSG = []
     main()
+    """W = ["Paquito","Jonathan","Diego","Adolfo","José","Sandra","Camila","Sofia","Iván","Alejandro"]
+    print(">>>> Radix Sort Lexicografico <<<<\n")
+    print(f"Arreglo Desordenado: \n{W}\n")
+    A = RadixSort_Cadenas(W)
+    print(f"Arreglo Ordenado: \n{A}\n")"""
+
