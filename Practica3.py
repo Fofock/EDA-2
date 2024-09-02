@@ -99,10 +99,10 @@ def ejecucion(elementos):
     A = []   
     
     #Mejor de los casos
-    x = 10 
+    #x = 10 
     
     #Peor de los casos 
-    #x = elementos * 1000
+    x = elementos * 1000
     
     #Caso Promedio
     #x = elementos
@@ -133,10 +133,10 @@ def TimepoPromedio(arrTiempos, algoritmo, elemetos):
     return t    
 
 def graficas(TCSG, TRSG, elementos):
-    # Graficar los tiempos de ejecución para Bubble Sort
+    # Graficar los tiempos de ejecución 
     plt.plot(elementos, TCSG, label="Countig Sort", color="red", marker='o')
     
-    # Graficar los tiempos de ejecución para Bubble Sort Optimizado
+    # Graficar los tiempos de ejecución 
     plt.plot(elementos, TRSG, label="Radix Sort", color="blue", marker='x')
     
     # Configurar la gráfica
@@ -197,12 +197,12 @@ def main():
 
 #EJECUTAR SOLO LAS ACCIONES QUE "ESTAN AL AIRE" DE ESTE MODULO, Y NO DE LAS IMPORTACIONES
 if __name__ == "__main__":
-    TCSG = []
+    """TCSG = []
     TRSG = []
-    main()
-    """W = ["Paquito","Jonathan","Diego","Adolfo","José","Sandra","Camila","Sofia","Iván","Alejandro"]
+    main()"""
+    W = ["Paquito","Jonathan","Diego","Adolfo","José","Sandra","Camila","Sofia","Iván","Alejandro"]
     print(">>>> Radix Sort Lexicografico <<<<\n")
     print(f"Arreglo Desordenado: \n{W}\n")
     A = RadixSort_Cadenas(W)
-    print(f"Arreglo Ordenado: \n{A}\n")"""
+    print(f"Arreglo Ordenado: \n{A}\n")
 
