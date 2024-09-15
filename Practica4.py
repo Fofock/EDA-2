@@ -45,7 +45,7 @@ def BusquedaLinealCentinela(A,key):
     last = A[n-1]
     A[n-1] = key
     i = 0
-    while i < n and A[i] != key:
+    while i < n and A[i] != key: #AQUI ESTA DE MAS LA VERIFICACION DE TAMAÑO DEL WHILE, YA QUE COMO ASIGNAMOS EL VALOR DE LA KEY AL FINAL, EL BUCLE SIEMPRE ACABARÁ
         i += 1
     A[n-1] == last
     if i < n-1 or last == key:

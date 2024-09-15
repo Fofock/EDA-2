@@ -25,12 +25,12 @@ def Insertar(T, m, key, valor):
     h = ha(key, m)
     while j < m:
         indice = (h+j) % m
-        par = (key, valor)
+        par = (key, valor) #EL VALOR ES 
         if T[indice] is None:
             T[indice] = par 
             return indice
         else:
-            j = j+1 #LINEAR PROBING, SI NO ESTA VACIO PASA AL SIGUIENTE INDICE 
+            j = j+1 #LINEAR PROBING PARA EL MANEJO DE COLISIONES, SI NO ESTA VACIO PASA AL SIGUIENTE INDICE 
     return -1 #SI ESTA LLENO EL ARREGLO DA UN ERROR 
     
 def Buscar(T, key, m):
@@ -43,7 +43,6 @@ def Buscar(T, key, m):
                 return T[indice][1]
         else:
             j += 1
-        return -1
     return -1
 
 def llenarTabla(T, m, longK):
