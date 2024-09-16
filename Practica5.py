@@ -1,5 +1,6 @@
 import random
-import string
+from Database_12K import Usuario
+import time
 
 #FUNCIÓN PREHASHING 
 def ConvertirLlave(key):
@@ -84,11 +85,8 @@ def RandPrimo(start, end):
     return random.choice(primes)#CHOICE NOS PERMITE SELECCIONAR UN VALOR ALEATORIO DE UN ARREGLO
 
 #FUNCIÓN HASH UNIVERSAL
-def HashUniversal(key, m):
+def HashUniversal(key, m, a, b, p):
     hashkey = ConvertirLlave(key)
-    p = RandPrimo(m, 2*m)
-    a = random.randint(1, p-1) #A NO PUEDE SER 0 PARA QUE NO NOS DE PROBLEMAS CON LA OPERACIÓN MATEMATICA
-    b = random.randint(0, p-1) #B SI PUEDE SER 0 PERO 
     return (((a*hashkey)+b)%p)% m
 
 ###CLASE PARA EL MANEJO DE COLISONES CON CHAINING
@@ -97,13 +95,15 @@ class HashTable:
     def __init__(self, size): 
         self.size = size
         self.table = [[] for _ in range(size)]  #CREA UNA LISTA CON UNA LISTA EN CADA INDICE DE FORMA PYTHONOSA
-
+        self.p = RandPrimo(self.size, 2*(self.size))
+        self.a = random.randint(1, self.p - 1) #A NO PUEDE SER 0 PARA QUE NO NOS DE PROBLEMAS CON LA OPERACIÓN MATEMATICA
+        self.b = random.randint(0, self.p - 1) #B SI PUEDE SER 0 PERO
+        
     def hash_function(self, key):
         #HACEMOS USO DE LA FUNCIÓN HASH UNIVERSAL QUE PREVIAMENTE HABIAMOS CREADO
-        return HashUniversal(key,self.size) 
+        return HashUniversal(key,self.size, self.a, self.b, self.p) 
 
     def insert(self, key, value):
-        """Inserta un par clave-valor en la tabla hash, permitiendo múltiples valores por clave."""
         index = self.hash_function(key)
         bucket = self.table[index] #HAY QUE TENER EN CUENTA QUE BUCKET ES UN ARREGLO TAMBIEN
         # Buscar si la clave ya está en el bucket
@@ -113,10 +113,9 @@ class HashTable:
                 pair[1].append(value)
                 return
         # Si la clave no está en el bucket, añade un nuevo par con una lista de valores
-        bucket.append([key, [value]])  # ### Aquí se almacena el nuevo par clave-valor
+        bucket.append((key, [value]))  # Aquí se almacena el nuevo par clave-valor
 
     def search(self, key):
-        """Busca los valores asociados a una clave en la tabla hash."""
         index = self.hash_function(key)
         bucket = self.table[index]
         for pair in bucket:
@@ -124,34 +123,72 @@ class HashTable:
                 return pair[1]  # Retorna la lista de valores
         return None  # Retorna None si la clave no se encuentra
 
-    def delete(self, key):
-        """Elimina todos los pares clave-valor de la tabla hash para una clave dada."""
-        index = self.hash_function(key)
-        bucket = self.table[index]
-        for i, pair in enumerate(bucket):
-            if pair[0] == key:
-                del bucket[i]
-                return True
-        return False  # Retorna False si la clave no se encuentra
+def Login(tablaHash, username, password):
+    resultados = tablaHash.search(username)  ### Se usa la función search de la clase HashTable
+    print(f"\n########  Login   ########\nUsuario: {username}\nContraseña: {password}\n")
+    if not resultados:
+        print("Usuario no encontrado.")
+    else:
+        usuario_encontrado = False
+        for usuario in resultados:
+            if usuario.password == password:
+                print(f"Acceso Autorizado: Bienvenido {usuario.fullname}")
+                usuario_encontrado = True
+                break
+        if not usuario_encontrado:
+            print("Acceso Denegado: Contraseña Incorrecta")
+
+# Comparación de tiempos
+def busquedaLinealOptimizada(arr, key):
+    for usuario in arr:
+        if usuario.username == key:
+            return usuario
+    return None
+
+def puntoDos(tabla, usuarios):
+    print('\n###########  Comparación de tiempos  ##############\n')
+    usuariosPrueba = random.sample(usuarios, 10)
+
+    tiempos_hash = []
+    tiempos_lineal = []
+
+    for usuario in usuariosPrueba:
+        username = usuario.username
+
+        #BUSQUEDA EN LA TABLA
+        inicio = time.perf_counter()
+        tabla.search(username)  ### Uso de la tabla hash para buscar
+        fin = time.perf_counter()
+        tiempos_hash.append(fin - inicio)
+
+        # Búsqueda lineal
+        inicioL= time.perf_counter()
+        busquedaLinealOptimizada(usuarios, username)  ### Búsqueda lineal en la lista de usuarios
+        finL= time.perf_counter()
+        tiempos_lineal.append(finL - inicioL)
+
+        print(f"Tiempo búsqueda en tabla hash para {username}: {fin - inicio} segundos")
+        print(f"Tiempo búsqueda lineal para {username}: {finL - inicioL} segundos")
+
+    promedio_hash = sum(tiempos_hash) / len(tiempos_hash)
+    promedio_lineal = sum(tiempos_lineal) / len(tiempos_lineal)
+
+    print(f"\nPromedio tiempo búsqueda en Tabla Hash: {promedio_hash:.6f} segundos")
+    print(f"Promedio tiempo Búsqueda Lineal: {promedio_lineal:.6f} segundos")
 
 # Ejemplo de uso
 if __name__ == "__main__":
-    size = 10
-    hash_table = HashTable(size)
+    tamaño = 15000
+    tabla = HashTable(tamaño) 
+    usuarios = Usuario.GetUsuariosDB(12000)  #OBTENEMOS LOS USUARIOS DE LA BASE DE DATOS
 
-    # Insertar elementos
-    hash_table.insert("key1", "value1")
-    hash_table.insert("key2", "value2")
-    hash_table.insert("key1", "value3")  # Añade un valor adicional para "key1"
-    hash_table.insert("key3", "value4")  # Añade un nuevo par con una clave diferente
+    for usuario in usuarios:
+        tabla.insert(usuario.username, usuario)  #SE INSERTAN LOS USUARIOS EN LA TABLA
 
-    # Buscar elementos
-    print(hash_table.search("key1"))  # Debería imprimir ["value1", "value3"]
-    print(hash_table.search("key2"))  # Debería imprimir ["value2"]
-    print(hash_table.search("key3"))  # Debería imprimir ["value4"]
-    print(hash_table.search("key4"))  # Debería imprimir "None"
+    # Probar la función Login
+    Login(tabla, "user10", "pass10")  #CONTRASEÑA CORRECTA
+    Login(tabla, "user5000", "wrongpass")  #CONTRASEÑA INCORRECTA
+    Login(tabla, "nonexistent", "password")  #USUARIO INEXISTENTE
 
-    # Eliminar elementos
-    hash_table.delete("key2")
-    print(hash_table.search("key2"))  # Debería imprimir "None"
-        
+    #COMPARACIÓN DE TIEMPOS
+    puntoDos(tabla, usuarios)  
