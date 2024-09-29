@@ -1,8 +1,3 @@
-"Una clase es una plantilla que nos sirve para crear objetos, los cuales son un tipo de dato"
-#TODOS LOS OBJETOS TIENEN METODOS YA ESTABLECIDOS POR QUE TODOS LOS OBJETOS HEREDAN DE UNA SUPERCLASE
-#EL METODO REPR NOS AYUDA A QUE PODAMOS REGRESAR UNA CADENA CUANDO LLAMAMOS A ESTA FUNCION
-#UNA ARISTA SE DEFINE COMO DOS nodoS (ARISTA AB)
-
 class Grafo():
     def __init__(self):
         self.vertices = {} #CREAMOS UN DICCIONARIO PARA ALMACENAR LOS nodoS POR NOMBRE
@@ -41,6 +36,47 @@ class Grafo():
             listaAdya = Nodo.vecinos
             print(f"{NomNodo} -> {listaAdya}")
             
+    #ALGORITMO PARA RECORRER TODOS LOS NODOS DE UN GRAFO
+    def BFS(self, nombreS):
+        s = self.vertices[nombreS]
+        for vertice in self.vertices.values(): #VALUES NO HACE OTRA LISTA, ES UNA REFERENCIA AL ARERGLO ORIGINAL
+            vertice.color = "White"
+            vertice.d = float('inf')
+            vertice.p = None
+        
+        s.color = "Gris"
+        s.d = 0
+        s.p = None
+        Q = []
+        Q.append(s)
+        while Q: #WHILE PYTHONOSO
+            u = Q.pop(0)
+            for v in s.vecinos:
+                if v.color == "White":
+                    v.color = "Gris"
+                    v.d = u.d + 1
+                    v.p = u
+                    Q.append(v)
+            u.color = "Negro"
+            
+    def DFS():
+        
+        pass
+    
+    def ImprimirRutaBFS(self, inicial, final):
+        self.BFS(inicial)
+        
+        nodoFinal = self.vertices[final]
+        
+        actual = nodoFinal
+        while actual != None:
+            print(actual.nombre)
+            actual = actual.p
+        
+        
+        
+        
+            
 
 
 
@@ -49,7 +85,11 @@ class Nodo():
     def __init__(self, nombre):
         self.vecinos = []
         self.nombre = nombre
-
+        self.color = None
+        self.d = None
+        self.p = None
+        
+        
     def agregarVecino(self,nuevoVecino):
         if nuevoVecino in self.vecinos:
             return print(f"El verice {self.nombre} ya tiene un vecino {nuevoVecino}")
@@ -78,3 +118,5 @@ grafo.agregarArista("B", "D")
 grafo.agregarArista("C", "D")
 grafo.agregarArista("C", "E")
 grafo.Imprimir()
+grafo.BFS("A")
+grafo.ImprimirRutaBFS("A", "D")
