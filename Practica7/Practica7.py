@@ -82,9 +82,6 @@ class Grafo():
             
         s = self.vertices[nombreS]
         self.DFS_VISITAR(s)
-        """for vertice in self.vertices.values():
-            if vertice.color == "White":
-                self.DFS_VISITAR(vertice)"""
         
     def EncontrarCaminoBFS(self, inicial, final):
         self.BFS(inicial) #COMO CONSECUENCIA DEL BFS OBTENEMOS LA RUTA MAS CORTO DE UN NODO A OTRO NODO, SIN EMBARGO ESTA NO ES LA FINALIDAD DE ESTE ALGORITMO, RECORDEMOS QUE ESTE ES UN ALGORITMO DISEÑADO PARA RECORRER TODOS LOS VERTICES DE UN GRAFO.
@@ -109,7 +106,7 @@ class Grafo():
             nodo = actual.nombre
             ruta.append(nodo)
             actual = actual.p
-        print("\t\t\t\t\t### Ruta DFS ###")
+        print("\n\t\t\t\t\t### Ruta DFS ###")
         print(f"<No. Estaciones: {len(ruta)}>")
         for nodo in range(len(ruta)-1, -1, -1):
             print(f"{ruta[nodo]} ", end="-> " * (nodo > 0)) #NO COLOCAR LA FLECHA EN EL ULTIMO ELEMENTO
@@ -156,41 +153,10 @@ def CaminosEstaciones(grafo):
     print("\n\n>Ruta de Vallejo a Insurgentes")
     grafo.EncontrarCaminoBFS("Vallejo", "Insurgentes")
     grafo.EncontrarCaminoDFS("Vallejo", "Insurgentes")
-            
-grafo = Grafo()
-AgregarEstaciones(grafo)
-UnirLineaEstaciones(grafo)
-CaminosEstaciones(grafo)
     
-"""
 if __name__ == "__main__":
     grafo = Grafo()
-    grafo.agregarNodo("0")
-    grafo.agregarNodo("1")
-    grafo.agregarNodo("2")
-    grafo.agregarNodo("3")
-    grafo.agregarNodo("4")
-    grafo.agregarNodo("5")
-    grafo.agregarNodo("6")
-    grafo.agregarNodo("7")
-
-
-    grafo.agregarArista("1", "8")
-    grafo.agregarArista("1", "2")
-    grafo.agregarArista("1", "0")
-    grafo.agregarArista("1", "0")
-
-    grafo.agregarArista("2", "0")
-    grafo.agregarArista("2", "3")
-
-    grafo.agregarArista("3", "4")
-    grafo.agregarArista("3", "0")
-
-    grafo.agregarArista("4", "5")
-    grafo.agregarArista("4", "6")
-
-    grafo.agregarArista("5", "6")
-
-    grafo.Imprimir()
-    grafo.EncontrarCaminoBFS("2", "5")
-    grafo.EncontrarCaminoDFS("2", "5") """
+    AgregarEstaciones(grafo)
+    UnirLineaEstaciones(grafo)
+    CaminosEstaciones(grafo)
+    

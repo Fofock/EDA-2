@@ -63,6 +63,7 @@ def CountigSort_RadixSort(A, b, digito):
     #PARA ORDENAR EN B 
     for j in range(len(A)-1, -1, -1):
         cifra = ObtenDigito(A[j], digito)
+        #El menos uno es porque nuestros arreglos empiezan en 0 y el conteo en 1
         B[C[cifra]-1] = A[j]
         C[cifra] -= 1
 

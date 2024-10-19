@@ -15,7 +15,7 @@ def BusquedaBinaria(A, key):
     inicio = 0
     fin = len(A) - 1
     while(inicio <= fin):
-        mitad = (inicio + fin ) // 2 
+        mitad = (inicio + fin ) // 2 ##Redondea hacia abajo 
         if key == A[mitad]:
             return mitad
         elif key < A[mitad]:
@@ -197,7 +197,10 @@ def probarRepetidosLineal():
         print(f"Repeticiones: {repeticiones}, Índice inicial: {inicio}, Índice final: {final}")
 
 if __name__ == "__main__" :
-    TBLG = []
-    TBLCG = []
-    TBBRG = []
-    main()
+    # TBLG = []
+    # TBLCG = []
+    # TBBRG = []
+    # main()
+    A = [8,5,9,7,3] 
+    BusquedaLineal(A, 9)
+    print(A)

@@ -65,11 +65,11 @@ def MaxHeapify(A, i, n):
     SonL = 2*i + 1
     SonR = 2*i + 2
     posMAx = None
-    if (SonL < n) and (A[SonL] > A[i]):
+    if (SonL < n) and (A[SonL] > A[i]): #EL HIJO IZQUIERDO ES MAYOR AL PADRE, SE VERIFICA QUE LOS HIJOS SEAN MENORES AL TAMAÑO DEL ARREGLO PARA CONFIRMAR QUE EXISTEN, SI NO PODRIAMOS ESTAR INTENTANDO ACCEDER A UN INDICE QUE NO EXISTE LO QUE NOS DARIA UN ERROR
         posMAx = SonL
     else:
         posMAx = i
-    if (SonR < n) and (A[SonR] > A[posMAx]):
+    if (SonR < n) and (A[SonR] > A[posMAx]): #EL HIJO DERECHO ES MAYOR AL PADRE
         posMAx = SonR
     if posMAx != i: #ESTO QUIERE DECIR QUE SI ALGUNO DE LOS HIJOS ES MAYOR AL PADRE, DE AHI EL INTERCAMBIO
         A[i], A[posMAx] = A[posMAx], A[i] 
