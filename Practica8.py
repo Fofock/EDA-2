@@ -1,4 +1,3 @@
-
 class ArbolBB(): #ARBOL BINARIO DE BUSQUEDA
     def __init__(self):
         self.root = None
@@ -99,36 +98,64 @@ class ArbolBB(): #ARBOL BINARIO DE BUSQUEDA
             if nodo.der:
                 cola.append(nodo.der)
     
-    def AnchuraPretty(self):
-        if not self.root:
-            print("El Arbol Binario de Busqueda está vacío")
+    def PrintPretty(self):
+        niveles = self.AnchuraPretty()
+        if not niveles:
             return
 
+        altura = len(niveles) - 1
+        espaciado_inicial = 2 ** altura  # ESPACIADO INICIAL BASADO EN LA ALTURA DEL ÁRBOL
+
+        for i, nivel in enumerate(niveles):
+            linea_nodos = " " * espaciado_inicial
+            separador = " " * (2 ** (altura - i + 1))  # ESPACIADO DECRECIENTE PARA CADA NIVEL
+
+            for nodo in nivel:
+                if nodo is None:
+                    linea_nodos += " " * 3  # ESPACIO PARA NODOS VACÍOS
+                else:
+                    linea_nodos += f"{str(nodo):^3}" + separador
+
+            print(linea_nodos.rstrip())
+
+            # IMPRIMIR CONEXIONES DIAGONALES
+            if i < altura:
+                linea_conexiones = " " * (espaciado_inicial // 2)
+                for j, nodo in enumerate(nivel):
+                    if nodo is not None:
+                        if j % 2 == 0:  # NODO IZQUIERDO
+                            linea_conexiones += " /" + " " * (len(separador) - 2)
+                        else:  # NODO DERECHO
+                            linea_conexiones += "\\" + " " * (len(separador) - 1)
+                    else:
+                        linea_conexiones += " " * len(separador)
+                print(linea_conexiones.rstrip())
+
+            espaciado_inicial //= 2  # REDUCIR ESPACIADO PARA EL SIGUIENTE NIVEL
+
+    def AnchuraPretty(self):
+        if not self.root:
+            return []
+        
+        niveles = []
         cola = [self.root]
-        aux = []
-        i = 0
 
         while cola:
-            nivel_size = len(cola)
-            aux.append([])
-
-            for _ in range(nivel_size):
+            nivel = []
+            for _ in range(len(cola)):
                 nodo = cola.pop(0)
-
-                #POR ANCHURA
-                if nodo is not None:
-                    aux[i].append(nodo.valor)
-                    # Agregar hijos a la cola
-                    cola.append(nodo.izq)  # Agregar hijo izquierdo, puede ser None
-                    cola.append(nodo.der)   # Agregar hijo derecho, puede ser None
+                if nodo:
+                    nivel.append(nodo.valor)
+                    cola.append(nodo.izq)
+                    cola.append(nodo.der)
                 else:
-                    aux[i].append(None)  # Si el nodo es None, añade None a la lista
-
-            i += 1
-
-        print(aux)
-        return aux
-        
+                    nivel.append(None)
+                    cola.append(None)
+                    cola.append(None)
+            niveles.append(nivel)
+            if all(n is None for n in cola):
+                break 
+        return niveles
         
     def Limpiar(self):
         self.root = None
@@ -138,68 +165,29 @@ class ArbolBB(): #ARBOL BINARIO DE BUSQUEDA
 
     def __EliminarRecursivo__(self, k, nodo):
         if nodo is None:
-            return nodo  # El nodo no existe, no hay nada que eliminar
+            return nodo  #EL NODO NO EXISTE, NO HACEMOS NADA
 
-        # Encontrar el nodo a eliminar
+        #BUSCAR EL NODO A ELIMINAR
         if k < nodo.valor:
             nodo.izq = self.__EliminarRecursivo__(k, nodo.izq)
         elif k > nodo.valor:
             nodo.der = self.__EliminarRecursivo__(k, nodo.der)
         else:
-            # Nodo encontrado
-            # Caso 1: Nodo con un solo hijo o sin hijos
-            if nodo.izq is None:
-                return nodo.der  # Si no hay hijo izquierdo, devuelve el hijo derecho
-            elif nodo.der is None:
-                return nodo.izq  # Si no hay hijo derecho, devuelve el hijo izquierdo
 
-            # Caso 2: Nodo con dos hijos
-            # Encuentra el nodo más pequeño en el subárbol derecho
+            #NODO SIN HIJOS O CON UN SOLO HIJO 
+            if nodo.izq is None:
+                return nodo.der  # SI NO HAY HIJO IZQUIERDO, DEVUELVE EL HIJO DERECHO
+            elif nodo.der is None:
+                return nodo.izq  # SI NO HAY HIJO DERECHO, DEVUELVE EL HIJO IZQUIERDO
+
+            #NODO CON DOS HIJOS
+            #ENCUENTRA EL NODO MÁS PEQUEÑO EN EL SUBÁRBOL DERECHO
             temp = self.__MinRecursivo__(nodo.der)
-            nodo.valor = temp  # Reemplaza el valor del nodo a eliminar
-            nodo.der = self.__EliminarRecursivo__(temp, nodo.der)  # Elimina el nodo más pequeño
+            nodo.valor = temp  #REEMPLAZA EL VALOR DEL NODO A ELIMINAR
+            nodo.der = self.__EliminarRecursivo__(temp, nodo.der)  #ELIMINA EL NODO MÁS PEQUEÑO
 
         return nodo
     
-    def PrintPretty(self):
-        niveles = self.AnchuraPretty()
-        altura = len(niveles)
-        espaciado = 2 ** (altura)  # Espacio inicial entre nodos
-
-        for i, nivel in enumerate(niveles):
-            # Imprimir los nodos del nivel
-            linea_nodos = ""
-            for nodo in nivel:
-                if nodo is None:
-                    linea_nodos += " " * espaciado + " "  # Espacio para nodos ausentes
-                else:
-                    linea_nodos += str(nodo).center(espaciado)
-
-            print(linea_nodos)
-
-            # Imprimir diagonales
-            if i < altura - 1:  # Si no es el último nivel
-                linea_diagonales = ""
-                for j in range(len(nivel)):
-                    if j < len(nivel) - 1:  # Evitar el último nodo para no desbordar
-                        if nivel[j] is not None:  # Nodo padre
-                            linea_diagonales += " " * (espaciado // 2 - 1)  # Espacio inicial
-                            linea_diagonales += "/"
-                        else:
-                            linea_diagonales += " " * (espaciado // 2)
-
-                        # Espacio entre nodos
-                        if nivel[j + 1] is not None:  # Nodo padre
-                            linea_diagonales += " " * (espaciado - 2)  # Ajustar espacio
-                            linea_diagonales += "\\"
-                        else:
-                            linea_diagonales += " " * (espaciado - 1)
-                    else:
-                        linea_diagonales += " " * espaciado  # Espacio para el último nodo
-
-                print(linea_diagonales)
-
-            espaciado //= 2  # Reducir espacio para el siguiente nivel
 
 class Nodo():
     def __init__(self, valor):
@@ -222,8 +210,8 @@ if __name__ == "__main__":
     arbolBB.Imprimir()
     arbolBB.Insertar(14)
     arbolBB.Insertar(1)
-    print(arbolBB.Max())
-    print(arbolBB.Min())
+    print("El valor maximo es: ", arbolBB.Max())
+    print("El valor minimo es: ", arbolBB.Min())
     print("Existe el valor 4: ", arbolBB.Buscar(4))
     print("Existe el valor 8: ", arbolBB.Buscar(8))
     print("Existe el valor 13: ", arbolBB.Buscar(13))
