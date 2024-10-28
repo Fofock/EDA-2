@@ -1,3 +1,4 @@
+import random
 class Nodo:
     #HACEMOS UNSA SUGERENCIA SOBVRE EL TIPO DE DATO QUE ES t
     def __init__(self, t: int) -> None :
@@ -56,8 +57,7 @@ class ArbolB:
         x.llaves[i] = y.llaves[self.t] #INSERTAMOS LA NUEVA LLAVE EN X (ES LA ULTIMA LLAVE DE Y POR QUE RECOREDMOS QUE ESTA ANTES ERA LA MEDIA)
         y.llaves[self.t] = None #ELIMINAMOS LA LLAVE QUE INSERTAMOS EN X DE Y
         x.numLlaves += 1 #INCREMENTAMOS LA CANTIDAD DE LLAVES QUE TIENE EL NODO X
-        
-        
+
     def InsertNonFull(self, x, k):
         i = x.numLlaves
         if x.hoja: #SI X ES HOJA
@@ -83,7 +83,10 @@ class ArbolB:
             #LE PASAMOS EL VALOR DETERMINADO A LA FUCIÓN       
             self.InsertNonFull(x.hijos[i], k)
 
-    def Buscar(self, x, k) -> bool:
+    def Buscar(self, k):
+        return self.__BuscarRecursivo__(self.raiz, k)
+    
+    def __BuscarRecursivo__(self, x, k) -> bool:
         # LA PRIMERA VEZ X ES LA RAÍZ
         i = 1
         # BUSCA EN LAS LLAVES DE X, Y USAMOS EL NUMLLAVES PARA QUE EL BUCLE TENGA UN FIN SI ES QUE NO ENCOTRAMOS EL ELEMENTO 
@@ -98,7 +101,7 @@ class ArbolB:
         #SI NO ES HOJA PUEDE QUE ESTE EN EL ARBOL EN ALGUNO DE LOS HIJOS, POR ESO LLAMAMOS RECURSIVAMENTE 
         #LE PASAMOS RECURSIVAMENTE AL HIJO I DE X, QUE ES DONDE PODRIA ESTAR EL VALOR DE K
         else: 
-            return self.Buscar(x.hijos[i], k)
+            return self.__BuscarRecursivo__(x.hijos[i], k)
         
     def ImprimirPreOrder(self, nodo=None, nivel=0):
         if nodo is None:
@@ -157,5 +160,62 @@ class ArbolB:
             if not nodo.hoja and nodo.hijos[i] is not None:
                 self.PrintPretty(nodo.hijos[i], espacio)
 
-
+if __name__ == "__main__":
     
+    arbolB = ArbolB(2)
+    arbolB.Insertar(3)
+    arbolB.Insertar(1)
+    arbolB.Insertar(4)
+    arbolB.Insertar(2)
+    arbolB.Insertar(5)
+    arbolB.Insertar(7)
+    arbolB.Insertar(6)
+    arbolB.Insertar(11)
+    arbolB.Insertar(15)
+    arbolB.Insertar(22)
+    arbolB.Insertar(35)
+    arbolB.Insertar(21)
+    print("********** PreOrder ***********")
+    arbolB.ImprimirPreOrder()
+    print("********** InOrder ***********")
+    arbolB.ImprimirInOrder()
+    print("********** Pretty ***********")
+    arbolB.PrintPretty()
+    print("¿Existe la llave 3?: ", arbolB.Buscar(3))
+    print("¿Existe la llave 6?: ", arbolB.Buscar(6))
+    print("¿Existe la llave 15?: ",  arbolB.Buscar(15))
+    print("¿Existe la llave 0?: ", arbolB.Buscar(0))
+    print("¿Existe la llave 13?: ",  arbolB.Buscar(13))
+
+    arbolB_2 = ArbolB(2)
+    arbolB_2.Insertar(21)
+    arbolB_2.Insertar(35)
+    arbolB_2.Insertar(22)
+    arbolB_2.Insertar(15)
+    arbolB_2.Insertar(11)
+    arbolB_2.Insertar(6)
+    arbolB_2.Insertar(7)
+    arbolB_2.Insertar(5)
+    arbolB_2.Insertar(2)
+    arbolB_2.Insertar(4)
+    arbolB_2.Insertar(1)
+    arbolB_2.Insertar(3)
+    
+    print("********** PreOrder ***********")
+    arbolB_2.ImprimirPreOrder()
+    print("********** InOrder ***********")
+    arbolB_2.ImprimirInOrder()
+    print("********** Pretty ***********")
+    arbolB_2.PrintPretty()
+    print("¿Existe la llave 3?: ", arbolB_2.Buscar(3))
+    print("¿Existe la llave 6?: ", arbolB_2.Buscar(6))
+    print("¿Existe la llave 15?: ", arbolB_2.Buscar(15))
+    print("¿Existe la llave 0?: ", arbolB_2.Buscar(0))
+    print("¿Existe la llave 13?: ", arbolB_2.Buscar(13))
+    
+    arbolB_3 = ArbolB(6)
+    for i in range (1001):
+        r = random.randint(0,100)
+        arbolB_3.Insertar(r)
+    print("********** PreOrder ***********")
+    arbolB_3.ImprimirPreOrder()
