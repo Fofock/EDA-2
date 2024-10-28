@@ -99,12 +99,63 @@ class ArbolB:
         #LE PASAMOS RECURSIVAMENTE AL HIJO I DE X, QUE ES DONDE PODRIA ESTAR EL VALOR DE K
         else: 
             return self.Buscar(x.hijos[i], k)
-            
         
-            
+    def ImprimirPreOrder(self, nodo=None, nivel=0):
+        if nodo is None:
+            nodo = self.raiz
 
-bTree = ArbolB(3)
-for i in range(15):
-    bTree.Insertar(i)
+        # Imprime las llaves del nodo actual con la indentación correspondiente
+        print(" " * (4 *nivel) + "|" + "-" * (4 * nivel) + "{" + ", ".join(str(llave) for llave in nodo.llaves if llave is not None) + "}")
+
+        # Llama recursivamente a los hijos
+        if not nodo.hoja:
+            for hijo in nodo.hijos:
+                if hijo is not None:
+                    self.ImprimirPreOrder(hijo, nivel + 1)
+
+    def ImprimirInOrder(self, nodo=None, resultado=None):
+        if nodo is None:
+            nodo = self.raiz
+        if resultado is None:
+            resultado = []
+
+        # Recorre cada llave en el nodo actual en in-order, comenzando desde el índice 1
+        for i in range(1, nodo.numLlaves + 1):
+            # Llama recursivamente al hijo izquierdo de la llave actual, si existe
+            if nodo.hijos[i] is not None:
+                self.ImprimirInOrder(nodo.hijos[i], resultado)
+
+            # Agrega la llave actual al resultado
+            resultado.append(str(nodo.llaves[i]))
+
+        # Recorre el último hijo, que está después de la última llave
+        if nodo.hijos[nodo.numLlaves + 1] is not None:
+            self.ImprimirInOrder(nodo.hijos[nodo.numLlaves + 1], resultado)
+
+        # Imprime el resultado en un solo renglón cuando se procesa la raíz
+        if nodo == self.raiz:
+            print(", ".join(resultado))
+
+    def PrintPretty(self, nodo=None, espacio=0, separador=" "):
+        if nodo is None:
+            nodo = self.raiz
+
+        # Espacio de separación entre niveles del árbol
+        espacio += 10
+
+        # Recorre de derecha a izquierda para el orden gráfico, omitiendo índice 0
+        if not nodo.hoja and nodo.hijos[nodo.numLlaves + 1] is not None:
+            self.PrintPretty(nodo.hijos[nodo.numLlaves + 1], espacio)
+
+        # Muestra el nodo actual con el espaciado correspondiente, omitiendo None
+        print()
+        print(separador * espacio, end="")
+        print(", ".join(str(llave) for llave in nodo.llaves[1:nodo.numLlaves + 1] if llave is not None))
+
+        # Recorre el resto de los hijos en preorden, empezando desde el índice 1
+        for i in range(1, nodo.numLlaves + 1):
+            if not nodo.hoja and nodo.hijos[i] is not None:
+                self.PrintPretty(nodo.hijos[i], espacio)
+
+
     
-print(bTree.Buscar(bTree.raiz, 3))
