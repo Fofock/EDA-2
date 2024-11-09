@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 # FUNCION ENCARGADA DE LEER Y CARGAR LOS DATOS EN MEMORIA PRIMARIA 
-def cargarArchivo():
+def cargarArchivo(CP, nombreCompleto):
     directoroPadre = Path(__file__).parent # NOS DEVULVE EL DIRECTORIO PADRE DONDE ESTA CONTENIDO EL ARCHIVO ACTUAL 
     rutaCPs = directoroPadre / "CPdescarga.txt"
     
@@ -39,14 +39,16 @@ def cargarArchivo():
                         "ciudad": ciudad
                     }]
                 # EL DICCIOANRIO TIENE CÓDIGOS POSTALES COMO CLAVES Y LISTAS DE DICCIOANRIOS COMO VALORES
-        return codigosPostalesDiccionario
+        busacarCp(codigosPostalesDiccionario, CP, nombreCompleto)
         
     except FileNotFoundError:
         # EL ARCHIVO NO SE ENCONTRÓ
         print("El archivo no fue encontrado, favor de revisar que exista el archivo.")
+        return
     except Exception:
         # MANEJA CAULQUIER OTRO TIPO DE EXCEPCIÓN
         print("Error desconocido, favor de contactar a soport tecnico.")
+        return
 
 def busacarCp(diccionarioCPs, CP, nombreCompleto):
     num = 0
@@ -93,5 +95,5 @@ def guardarInfo(diccionarioCPs, CP, num, nombreCompleto):
 if __name__ == "__main__":
     nombreCompleto = input("Ingresa tu nombre completo: ")  
     CP = input("Ingresa tu código postal: ")
-    diccionarioCPs = cargarArchivo()
-    busacarCp(diccionarioCPs, CP, nombreCompleto)
+    cargarArchivo(CP, nombreCompleto)
+    
