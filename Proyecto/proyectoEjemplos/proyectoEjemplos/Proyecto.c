@@ -61,7 +61,7 @@ void splitChannels(char *Img)
 
     for (int i = 0; i < imaSize; i++)
     {
-        // CHARS ENTEROS SIN SIGNO 
+        // CHARS ENTEROS SIN SIGNO j
         unsigned char r = srcIma[i * channels + 0];
         unsigned char g = srcIma[i * channels + 1];
         unsigned char b = srcIma[i * channels + 2];
@@ -84,7 +84,6 @@ void splitChannels(char *Img)
     // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
 
 
-
     // Saving image
     stbi_write_jpg("imaBlue.jpg", width, height, 3, imaBlue, 100);
     stbi_write_jpg("imaRed.jpg", width, height, 3, imaRed, 100);
@@ -100,33 +99,38 @@ void splitChannels(char *Img)
 void CountingSort(unsigned char A[], int width, int height, int channels) {
     // n ES EL TAMAÑO DE A
     // BUSQUEDA DEL MAXIMO, EN ESTE CASO NO ES NECESARIO POR QUE NUESTRSO ARREGLOS SIEMPRE SERAN DE TAMAÑO 256 POR QUE SON LOS VALORES QUE PUEDEN TOMAR LOS ELEMENTOS RGB DE NUESTROS PIXELES
-
-    /* int k = A[0];
+    /*for (int j = 0; j < (width*height*channels); j++) {
+            printf("%hhu",A[j]);
+        }*/    /* int k = A[0];
     for (int i = 1; i < n; i++) {
         if (A[i] > k) {
             k = A[i];
         }
     }*/
 
-    int arrTam = 255;
+    int arrTam = 256;
     // NO ES NECESARIO UN CATEO POR QUE EN C PODEMOS ASIGNAR PUNTEROS DE TIPO VOID A UN PUNTERO DE TIPO UNSIGNED CHAR SIN NECESIDAD DE UN CASTEO EXPLICITO
     // USAMOS CALLOC PARA INICALIZAR EN 0 LOS ARREGLOS SIN LA NECESIDAD DE TENER QUE HACER UN FOR
     unsigned char *C = calloc(arrTam, sizeof(unsigned char));
-    unsigned char *B = calloc(arrTam, sizeof(unsigned char));
-    if(channels == 1){
+    unsigned char *B = calloc((width*height), sizeof(unsigned char));
+    if(channels == 1)
+    {
         // CONTAMOS LA FRECUENCIA DE CADA VALOR DE A (HISTOGRAMA)
-        for (int j = 0; j <= arrTam; j++) {
+        for (int j = 0; j <= (width*height); j++) {
             C[A[j]] = C[A[j]] + 1;
+        }
+        
+        for (int j = 0; j <= arrTam; j++) {
             B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
         }
-        // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN B PARA PODER OBTENER DE FORMA SENCILLA EN CSV
-        for (int i = 1; i <= arrTam; i++) {
+        // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN C
+        for (int i = 1; i <= arrTam+1; i++) {
             C[i] = C[i] + C[i - 1];
         }
-            // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
-            Ecualizacion(C, width, height);
-            GuardarHistograma(C, B);
-            // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
+        // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
+        Ecualizacion(C, width, height);
+        GuardarHistograma(C, B);
+        // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
 
         // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
         for (int j = arrTam; j >= 0; j--) {
@@ -142,39 +146,46 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
         // LIBERAMOS LA MEMORIA 
         free(C);
         free(B);
+        return;
     }
     else if (channels == 3)
     {   
         // OBTENDREMOS LOS VALORES DEL CANAL ROJO
         // COMO TENEMOS 3 CANALES LOS VALORES ROJOS SON LOS VALORES MULTIPLOS DE 3
         // CONTAMOS LA FRECUENCIA DE CADA VALOR DE A (HISTOGRAMA)
+        // EL RANGO ES WIDHT*HEIGHT YA QUE COMO ESTAMOS LLENDO DE 3 EN TRES, ES COMO SI DIVIDIERAMOS EL TAMAÑO DEL ARREGLO ENTRE 3, POR ESTA RAZON NO DEBEMOS MULTIPLICAR EL RANGO POR CHANNELS 
+        for (int j = 0; j < (width*height); j++) {
+            C[A[j * channels]] += 1;
+        }
+        // AQUI B SOLO ES UNA COPIA QUE NOS AYUDA A REPRESNETAR EL CSV, POR ESO NO MULTIPLICAMOS POR CHANNELS
         for (int j = 0; j <= arrTam; j++) {
-            C[A[j * channels]] = C[A[j * channels]] + 1;
             B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
         }
-        // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN B PARA PODER OBTENER DE FORMA SENCILLA EN CSV
-        for (int i = 1; i <= arrTam; i++) {
+        // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN C
+        for (int i = 1; i <= arrTam+1; i++) {
             C[i] = C[i] + C[i - 1];
         }
-            // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
-            Ecualizacion(C, width, height);
-            GuardarHistograma(C, B);
-            // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
+        // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
+        Ecualizacion(C, width, height);
+        GuardarHistograma(C, B);
+        //B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
 
         // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
-        for (int j = arrTam; j >= 0; j--) {
+        // ##### AQUI ESTA EL ERROR, TIENE QUE EMPEZAR DESDE EL ULTMO VALOR DE C
+        for (int j = (width*height) - 1 ; j >= 0; j--) {
             B[C[A[j * channels]] - 1] = A[j * channels];
-            C[A[j * channels]] = C[A[j * channels]] - 1;
+            C[A[j * channels]] -= 1;
         }
 
         // COPIAMOS LOS ELEMENTOS DE B -> A
-        for (int i = 0; i <= arrTam; i++) {
+        for (int i = 0; i < (width*height); i++) {
             A[i * channels] = B[i];
         }
 
         // LIBERAMOS LA MEMORIA 
         free(C);
         free(B);
+        return;
     }
     else 
     {
@@ -188,19 +199,20 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
 
 void Ecualizacion(unsigned char C[], int width, int height)
 {
+    unsigned char acumMin = C[0];
     int L = 256;
-    for(int i = 0; i < L; i++)
+    for(int i = 0; i < L ; i++)
     {
         // HACEMOS LA DIVISON CON DECIMALES ASEGURANDO UN CALCULO PRECISO
-        C[i] = (unsigned char)round(((float)((C[i] - C[0]) / ((width * height) - C[0])) * (L-1)));
+        C[i] = (unsigned char)round((((float)(C[i] - acumMin)) / ((float)((width * height) - acumMin))) * (L-1));
     }
     return;
-}
+} 
 
 void GuardarHistograma(unsigned char C[], unsigned char B[])
 {
     // ABRIMOS EL ARCHIVO CON PERMISOS DE ESCRITURA
-    FILE *fp = fopen("file.csv", "a+"); // FOPEN SI NO EXISTE EL ARCHIVO LO CREA
+    FILE *fp = fopen("file.csv", "w+"); // FOPEN SI NO EXISTE EL ARCHIVO LO CREA
     
     if (fp == NULL)
     {
