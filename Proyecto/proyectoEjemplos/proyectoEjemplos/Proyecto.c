@@ -8,6 +8,9 @@
 #include "stb-master/stb_image_write.h"
 
 void splitChannels();
+void CountingSort(unsigned char A[], int width, int height);
+void Ecualizacion(unsigned char C[], int width, int height);
+void GuardarHistograma(unsigned char C[], unsigned char B[]);
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +22,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     // EL ARGUMENTO 0 DE UN PROGRAMA ES EL PROPIO NOMBRE DEL EJECUTABLE, POR ESO NOS VAMOS AL INDICE UNO DE ARGV
-    char *Img = &argv[1]; 
+    char *Img = argv[1]; 
 
     
     
@@ -30,7 +33,7 @@ int main(int argc, char *argv[])
 void splitChannels(char *Img)
 {
     // OBTENERMOS EL VALOR QUE ALOGA A DONDE APUNTA IMG
-    char *srcPath = *Img; 
+    char *srcPath = Img; 
 
     int width, height, channels;
     //EL APUNTADOR *SCRIMA APUNTA AUN ARREGLO DE TAMAÑO WIDTH*HEIGHT*CHANNELS DE LOS CANALES QUE TIENE LA IMAGEN
@@ -113,22 +116,23 @@ void CountingSort(unsigned char A[], int width, int height) {
     // NO ES NECESARIO UN CATEO POR QUE EN C PODEMOS ASIGNAR PUNTEROS DE TIPO VOID A UN PUNTERO DE TIPO UNSIGNED CHAR SIN NECESIDAD DE UN CASTEO EXPLICITO
     // USAMOS CALLOC PARA INICALIZAR EN 0 LOS ARREGLOS SIN LA NECESIDAD DE TENER QUE HACER UN FOR
     unsigned char *C = calloc(arrTam, sizeof(unsigned char));
-    unsigned char *B = calloc(arrTam * sizeof(unsigned char));
+    unsigned char *B = calloc(arrTam, sizeof(unsigned char));
 
     // CONTAMOS LA FRECUENCIA DE CADA VALOR DE A (HISTOGRAMA)
     for (int j = 0; j <= arrTam; j++) {
         C[A[j]] = C[A[j]] + 1;
+        B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
     }
-        GuardarHistograma(C);
-    // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA
+    // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN B PARA PODER OBTENER DE FORMA SENCILLA EN CSV
     for (int i = 1; i <= arrTam; i++) {
         C[i] = C[i] + C[i - 1];
     }
-        // YA CN LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
+        // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
         Ecualizacion(C, width, height);
-        GuardarHistograma(C);
+        GuardarHistograma(C, B);
+        // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
 
-    // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO
+    // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
     for (int j = arrTam; j >= 0; j--) {
         B[C[A[j]] - 1] = A[j];
         C[A[j]] = C[A[j]] - 1;
@@ -144,7 +148,6 @@ void CountingSort(unsigned char A[], int width, int height) {
     free(B);
 }   
 
-
 void Ecualizacion(unsigned char C[], int width, int height)
 {
     int L = 256;
@@ -156,31 +159,22 @@ void Ecualizacion(unsigned char C[], int width, int height)
     return;
 }
 
-void GuardarHistograma(unsigned char C[])
+void GuardarHistograma(unsigned char C[], unsigned char B[])
 {
     // ABRIMOS EL ARCHIVO CON PERMISOS DE ESCRITURA
-    FILE *fp = fopen("file.csv", "w+"); // FOPEN SI NO EXISTE EL ARCHIVO LO CREA
+    FILE *fp = fopen("file.csv", "a+"); // FOPEN SI NO EXISTE EL ARCHIVO LO CREA
     
     if (fp == NULL)
     {
         printf("Error al abrir el archivo.\n");
         return;  // Salir de la función si no se pudo abrir el archivo
     }
-
-    // VERIFICAMOS SI EL ARCHIVO ESTA VACIO
-    fseek(fp, 0, SEEK_END);  // MOVEMOS EL PUNTERO AL FINAL DEL ARCHIVO 
-    long size = ftell(fp);   // OBTENEMOS EL TAMAÑO DEL ARCHIVO EN BYTES
-    if (size == 0) {         // SI EL TAMAÑO ES 0 EL ARCHIVO ESTA VACIO
         // VALORES DEL HISTOGRAMA (índices de 0 a 255)
+        fprintf(fp, "Índice,Histograma,Ecualizado\n");
         for (int i = 0; i < 256; i++) {
-            fprintf(fp, "%d\n\t", i); 
+            fprintf(fp, "%d,%hhu,%hhu", i, B[i],C[i]);
+            fprintf(fp, "\n");
         }
-    }
-    
-    // DATOS
-    for (int i = 0; i < 256; i++)
-        fprintf(fp, "%hhu\n", C[i]);
-    
     // CERRAMOS EL ARCHIVO 
     fclose(fp); 
     return;
