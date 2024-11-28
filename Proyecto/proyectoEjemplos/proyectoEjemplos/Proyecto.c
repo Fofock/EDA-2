@@ -8,7 +8,7 @@
 #include "stb-master/stb_image_write.h"
 
 void splitChannels();
-void CountingSort(unsigned char A[], int width, int height);
+void CountingSort(unsigned char A[], int width, int height, int channels);
 void Ecualizacion(unsigned char C[], int width, int height);
 void GuardarHistograma(unsigned char C[], unsigned char B[]);
 
@@ -23,9 +23,6 @@ int main(int argc, char *argv[])
     }
     // EL ARGUMENTO 0 DE UN PROGRAMA ES EL PROPIO NOMBRE DEL EJECUTABLE, POR ESO NOS VAMOS AL INDICE UNO DE ARGV
     char *Img = argv[1]; 
-
-    
-    
     splitChannels(Img);
     return 0;
 }
@@ -51,13 +48,13 @@ void splitChannels(char *Img)
 
     if (channels != 3)
     {
-        printf("\nERROR: La imágen debe ser de 3 canales.\n", width, height, channels);
+        printf("\nERROR: La imágen debe ser de 3 canales.\n");
         return;
     }
 
     int imaSize = width * height;
 
-    // SE MULTIPLICA POR EL VALOR DE CHANELS POR QUE AUNQUE SOLO VAMOS A TOMAR EN CUENTA EN CADA UNO DE LOS ARREGLOS EL VALOR CORRESPONDIENTE A CADA COLOR EN CADA PIXEL , CADA PIXEL TRIENE 3 VALORES ES DECIR 3 BYTES Y DOS DE ESTOS LOS ESTABLECEREMOS EN 0 
+    // SE MULTIPLICA POR EL VALOR DE CHANELS POR QUE AUNQUE SOLO VAMOS A TOMAR EN CUENTA EN CADA UNO DE LOS ARREGLOS EL VALOR CORRESPONDIENTE A CADA COLOR EN CADA PIXEL , CADA PIXEL TIENE 3 VALORES ES DECIR 3 BYTES Y DOS DE ESTOS LOS ESTABLECEREMOS EN 0 
     unsigned char *imaBlue = malloc(imaSize * channels); 
     unsigned char *imaRed = malloc(imaSize * channels);
     unsigned char *imaGreen = malloc(imaSize * channels);
@@ -83,7 +80,7 @@ void splitChannels(char *Img)
     }
 
     // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
-    CountingSort(imaRed, width, height);
+    CountingSort(imaRed, width, height, channels);
     // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
 
 
@@ -99,9 +96,8 @@ void splitChannels(char *Img)
     stbi_image_free(imaGreen); // free memory
 }
 
-
 // A LA FUNCION LE PASAMOS EL ARREGLO, RECORDANDO QUE EN C LOS ARREGLOS SIEMPRE SE PASAN POR REFERENCA, ES DECIR EL PUNTERO QUE APUNTA A ESTOS 
-void CountingSort(unsigned char A[], int width, int height) {
+void CountingSort(unsigned char A[], int width, int height, int channels) {
     // n ES EL TAMAÑO DE A
     // BUSQUEDA DEL MAXIMO, EN ESTE CASO NO ES NECESARIO POR QUE NUESTRSO ARREGLOS SIEMPRE SERAN DE TAMAÑO 256 POR QUE SON LOS VALORES QUE PUEDEN TOMAR LOS ELEMENTOS RGB DE NUESTROS PIXELES
 
@@ -117,35 +113,77 @@ void CountingSort(unsigned char A[], int width, int height) {
     // USAMOS CALLOC PARA INICALIZAR EN 0 LOS ARREGLOS SIN LA NECESIDAD DE TENER QUE HACER UN FOR
     unsigned char *C = calloc(arrTam, sizeof(unsigned char));
     unsigned char *B = calloc(arrTam, sizeof(unsigned char));
+    if(channels == 1){
+        // CONTAMOS LA FRECUENCIA DE CADA VALOR DE A (HISTOGRAMA)
+        for (int j = 0; j <= arrTam; j++) {
+            C[A[j]] = C[A[j]] + 1;
+            B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
+        }
+        // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN B PARA PODER OBTENER DE FORMA SENCILLA EN CSV
+        for (int i = 1; i <= arrTam; i++) {
+            C[i] = C[i] + C[i - 1];
+        }
+            // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
+            Ecualizacion(C, width, height);
+            GuardarHistograma(C, B);
+            // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
 
-    // CONTAMOS LA FRECUENCIA DE CADA VALOR DE A (HISTOGRAMA)
-    for (int j = 0; j <= arrTam; j++) {
-        C[A[j]] = C[A[j]] + 1;
-        B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
-    }
-    // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN B PARA PODER OBTENER DE FORMA SENCILLA EN CSV
-    for (int i = 1; i <= arrTam; i++) {
-        C[i] = C[i] + C[i - 1];
-    }
-        // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
-        Ecualizacion(C, width, height);
-        GuardarHistograma(C, B);
-        // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
+        // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
+        for (int j = arrTam; j >= 0; j--) {
+            B[C[A[j]] - 1] = A[j];
+            C[A[j]] = C[A[j]] - 1;
+        }
 
-    // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
-    for (int j = arrTam; j >= 0; j--) {
-        B[C[A[j]] - 1] = A[j];
-        C[A[j]] = C[A[j]] - 1;
-    }
+        // COPIAMOS LOS ELEMENTOS DE B -> A
+        for (int i = 0; i <= arrTam; i++) {
+            A[i] = B[i];
+        }
 
-    // COPIAMOS LOS ELEMENTOS DE B -> A
-    for (int i = 0; i <= arrTam; i++) {
-        A[i] = B[i];
+        // LIBERAMOS LA MEMORIA 
+        free(C);
+        free(B);
     }
+    else if (channels == 3)
+    {   
+        // OBTENDREMOS LOS VALORES DEL CANAL ROJO
+        // COMO TENEMOS 3 CANALES LOS VALORES ROJOS SON LOS VALORES MULTIPLOS DE 3
+        // CONTAMOS LA FRECUENCIA DE CADA VALOR DE A (HISTOGRAMA)
+        for (int j = 0; j <= arrTam; j++) {
+            C[A[j * channels]] = C[A[j * channels]] + 1;
+            B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
+        }
+        // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN B PARA PODER OBTENER DE FORMA SENCILLA EN CSV
+        for (int i = 1; i <= arrTam; i++) {
+            C[i] = C[i] + C[i - 1];
+        }
+            // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
+            Ecualizacion(C, width, height);
+            GuardarHistograma(C, B);
+            // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
 
-    // LIBERAMOS LA MEMORIA 
-    free(C);
-    free(B);
+        // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
+        for (int j = arrTam; j >= 0; j--) {
+            B[C[A[j * channels]] - 1] = A[j * channels];
+            C[A[j * channels]] = C[A[j * channels]] - 1;
+        }
+
+        // COPIAMOS LOS ELEMENTOS DE B -> A
+        for (int i = 0; i <= arrTam; i++) {
+            A[i * channels] = B[i];
+        }
+
+        // LIBERAMOS LA MEMORIA 
+        free(C);
+        free(B);
+    }
+    else 
+    {
+        printf("No es posible ecualizar imagenes con ese numero de canales");
+        free(C);
+        free(B);
+        return;
+    }
+    
 }   
 
 void Ecualizacion(unsigned char C[], int width, int height)
