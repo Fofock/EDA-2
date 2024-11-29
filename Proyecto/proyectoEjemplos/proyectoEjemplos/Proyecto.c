@@ -9,8 +9,8 @@
 
 void splitChannels();
 void CountingSort(unsigned char A[], int width, int height, int channels);
-void Ecualizacion(unsigned char C[], int width, int height);
-void GuardarHistograma(unsigned char C[], unsigned char B[]);
+void Ecualizacion(int C[], int width, int height);
+void GuardarHistograma(int C[], int B[]);
 
 int main(int argc, char *argv[])
 {
@@ -41,59 +41,70 @@ void splitChannels(char *Img)
         printf("No se pudo cargar la imagen %s :(\n\n\n", srcPath);
         return;
     }
-    else
+    else if(channels == 3)
     {
         printf("\nImagen cargada correctamente: %dx%d pixeles con %d canales.\n", width, height, channels);
-    }
+        int imaSize = width * height;
 
-    if (channels != 3)
-    {
-        printf("\nERROR: La imágen debe ser de 3 canales.\n");
+        // SE MULTIPLICA POR EL VALOR DE CHANELS POR QUE AUNQUE SOLO VAMOS A TOMAR EN CUENTA EN CADA UNO DE LOS ARREGLOS EL VALOR CORRESPONDIENTE A CADA COLOR EN CADA PIXEL , CADA PIXEL TIENE 3 VALORES ES DECIR 3 BYTES Y DOS DE ESTOS LOS ESTABLECEREMOS EN 0 
+        unsigned char *imaBlue = malloc(imaSize * channels); 
+        unsigned char *imaRed = malloc(imaSize * channels);
+        unsigned char *imaGreen = malloc(imaSize * channels);
+
+        for (int i = 0; i < imaSize; i++)
+        {
+            // CHARS ENTEROS SIN SIGNO 
+            unsigned char r = srcIma[i * channels + 0];
+            unsigned char g = srcIma[i * channels + 1];
+            unsigned char b = srcIma[i * channels + 2];
+
+            imaRed[i * channels + 0] = r;
+            imaRed[i * channels + 1] = 0;
+            imaRed[i * channels + 2] = 0;
+
+            imaGreen[i * channels + 0] = 0;
+            imaGreen[i * channels + 1] = g;
+            imaGreen[i * channels + 2] = 0;
+
+            imaBlue[i * channels + 0] = 0;
+            imaBlue[i * channels + 1] = 0;
+            imaBlue[i * channels + 2] = b;
+        }
+
+        // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
+        CountingSort(imaRed, width, height, channels);
+        // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
+
+
+        // Saving image
+        stbi_write_jpg("imaBlue.jpg", width, height, 3, imaBlue, 100);
+        stbi_write_jpg("imaRed.jpg", width, height, 3, imaRed, 100);
+        stbi_write_jpg("imaGreen.jpg", width, height, 3, imaGreen, 100);
+
+        // Liberar la memoria de la imágen
+        stbi_image_free(imaBlue);  // free memory
+        stbi_image_free(imaRed);   // free memory
+        stbi_image_free(imaGreen); // free memory
         return;
     }
-
-    int imaSize = width * height;
-
-    // SE MULTIPLICA POR EL VALOR DE CHANELS POR QUE AUNQUE SOLO VAMOS A TOMAR EN CUENTA EN CADA UNO DE LOS ARREGLOS EL VALOR CORRESPONDIENTE A CADA COLOR EN CADA PIXEL , CADA PIXEL TIENE 3 VALORES ES DECIR 3 BYTES Y DOS DE ESTOS LOS ESTABLECEREMOS EN 0 
-    unsigned char *imaBlue = malloc(imaSize * channels); 
-    unsigned char *imaRed = malloc(imaSize * channels);
-    unsigned char *imaGreen = malloc(imaSize * channels);
-
-    for (int i = 0; i < imaSize; i++)
+    else if (channels == 1)
     {
-        // CHARS ENTEROS SIN SIGNO 
-        unsigned char r = srcIma[i * channels + 0];
-        unsigned char g = srcIma[i * channels + 1];
-        unsigned char b = srcIma[i * channels + 2];
+        printf("\nImagen cargada correctamente: %dx%d pixeles con %d canales.\n", width, height, channels);
 
-        imaRed[i * channels + 0] = r;
-        imaRed[i * channels + 1] = 0;
-        imaRed[i * channels + 2] = 0;
+        // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
+        CountingSort(srcIma, width, height, channels);
+        // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
+        // Saving image
+        stbi_write_jpg("eqIma.jpg", width, height, 1, srcIma, 100);
 
-        imaGreen[i * channels + 0] = 0;
-        imaGreen[i * channels + 1] = g;
-        imaGreen[i * channels + 2] = 0;
-
-        imaBlue[i * channels + 0] = 0;
-        imaBlue[i * channels + 1] = 0;
-        imaBlue[i * channels + 2] = b;
+        // Liberar la memoria de la imágen
+        stbi_image_free(srcIma);  // free memory
+    }
+    else{
+        printf("\nERROR: La imagen debe de ser de 1 0 3 canales.");
     }
 
-    // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
-    CountingSort(imaRed, width, height, channels);
-    // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
 
-/*
-    // Saving image
-    stbi_write_jpg("imaBlue.jpg", width, height, 3, imaBlue, 100);
-    stbi_write_jpg("imaRed.jpg", width, height, 3, imaRed, 100);
-    stbi_write_jpg("imaGreen.jpg", width, height, 3, imaGreen, 100);
-
-    // Liberar la memoria de la imágen
-    stbi_image_free(imaBlue);  // free memory
-    stbi_image_free(imaRed);   // free memory
-    stbi_image_free(imaGreen); // free memory
-*/
 }
 
 // A LA FUNCION LE PASAMOS EL ARREGLO, RECORDANDO QUE EN C LOS ARREGLOS SIEMPRE SE PASAN POR REFERENCA, ES DECIR EL PUNTERO QUE APUNTA A ESTOS 
@@ -102,8 +113,8 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
     int arrTam = 256;
     // NO ES NECESARIO UN CATEO POR QUE EN C PODEMOS ASIGNAR PUNTEROS DE TIPO VOID A UN PUNTERO DE TIPO UNSIGNED CHAR SIN NECESIDAD DE UN CASTEO EXPLICITO
     // USAMOS CALLOC PARA INICALIZAR EN 0 LOS ARREGLOS SIN LA NECESIDAD DE TENER QUE HACER UN FOR
-    unsigned char *C = calloc(arrTam, sizeof(unsigned char));
-    unsigned char *B = calloc((width*height), sizeof(unsigned char));
+    int *C = (int*)calloc(arrTam, sizeof(int));
+    int *B = (int*)calloc(arrTam, sizeof(int));
     if(channels == 1)
     {
         // CONTAMOS LA FRECUENCIA DE CADA VALOR DE A (HISTOGRAMA)
@@ -119,21 +130,26 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
             C[i] = C[i] + C[i - 1];
         }
         // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
+        //Ecualizacion(C, width, height);
         Ecualizacion(C, width, height);
-        GuardarHistograma(C, B);
+        GuardarHistograma(B, C);
         // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
-
+        /*
         // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
         for (int j = arrTam; j >= 0; j--) {
-            B[C[A[j]] - 1] = A[j];
+            B[C[A[j]] - 1] = (int)A[j];
             C[A[j]] = C[A[j]] - 1;
         }
 
         // COPIAMOS LOS ELEMENTOS DE B -> A
         for (int i = 0; i <= arrTam; i++) {
-            A[i] = B[i];
+            A[i] = (unsigned char)B[i];
         }
-
+        */
+        // ACTUALIZAMOS EL ARREGLO A PARA QUE SE ECUALICE 
+        for (int i = 0; i < (width*height); i++) {
+            A[i] = (unsigned char)C[A[i]];
+        }
         // LIBERAMOS LA MEMORIA 
         free(C);
         free(B);
@@ -148,7 +164,7 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
         for (int j = 0; j < (width*height); j++) {
             C[A[j * channels]] += 1;
         }
-        GuardarHistograma(B, C);
+        //GuardarHistograma(B, C);
         // AQUI B SOLO ES UNA COPIA QUE NOS AYUDA A REPRESNETAR EL CSV, POR ESO NO MULTIPLICAMOS POR CHANNELS
         for (int j = 0; j < arrTam; j++) {
             B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
@@ -157,23 +173,30 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
         for (int i = 1; i < arrTam; i++) {
             C[i] = C[i] + C[i - 1];
         }
+        Ecualizacion(C, width, height);
+        GuardarHistograma(B, C);
         // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
         //Ecualizacion(C, width, height);
         //GuardarHistograma(C, B);
         //B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
 
+        /*
         // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
-        // ##### AQUI ESTA EL ERROR, TIENE QUE EMPEZAR DESDE EL ULTMO VALOR DE C
+        // NO HAY NECESIDAD DE CASTEO AQUI
         for (int j = (width*height) - 1 ; j >= 0; j--) {
-            B[C[A[j * channels]] - 1] = A[j * channels];
+            B[C[A[j * channels]] - 1] = (int)A[j * channels];
             C[A[j * channels]] -= 1;
         }
 
-        // COPIAMOS LOS ELEMENTOS DE B -> A
+        // COPIAMOS LOS ELEMENTOS DE B -> A TENEMOS QUE CASTEAR, NO SON EL MISMO TIPO DE DATO
         for (int i = 0; i < (width*height); i++) {
-            A[i * channels] = B[i];
+            A[i * channels] = (unsigned char)B[i];
         }
-
+        */
+        // ACTUALIZAMOS EL ARREGLO A PARA QUE SE ECUALICE 
+        for (int i = 0; i < (width*height); i++) {
+            A[i * channels] = (unsigned char)C[A[i*channels]];
+        }
         // LIBERAMOS LA MEMORIA 
         free(C);
         free(B);
@@ -189,19 +212,19 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
     
 }   
 
-void Ecualizacion(unsigned char C[], int width, int height)
+void Ecualizacion(int C[], int width, int height)
 {
-    unsigned char acumMin = C[0];
+    int acumMin = C[0];
     int L = 256;
     for(int i = 0; i < L ; i++)
     {
         // HACEMOS LA DIVISON CON DECIMALES ASEGURANDO UN CALCULO PRECISO
-        C[i] = (unsigned char)round((((float)(C[i] - acumMin)) / ((float)((width * height) - acumMin))) * (L-1));
+        C[i] = (int)round((((double)(C[i] - acumMin)) / ((double)((width * height) - acumMin))) * (L-2))+1;
     }
     return;
 } 
 
-void GuardarHistograma(unsigned char C[], unsigned char B[])
+void GuardarHistograma(int B[], int C[])
 {
     // ABRIMOS EL ARCHIVO CON PERMISOS DE ESCRITURA
     FILE *fp = fopen("file.csv", "w+"); // FOPEN SI NO EXISTE EL ARCHIVO LO CREA
@@ -212,9 +235,9 @@ void GuardarHistograma(unsigned char C[], unsigned char B[])
         return;  // Salir de la función si no se pudo abrir el archivo
     }
         // VALORES DEL HISTOGRAMA (índices de 0 a 255)
-        fprintf(fp, "Índice,Histograma,Ecualizado\n");
+        fprintf(fp, "valor,histo,eqHisto\n");
         for (int i = 0; i < 256; i++) {
-            fprintf(fp, "%d,%hhu,%hhu", i, B[i],C[i]);
+            fprintf(fp, "%d,%d,%d", i, B[i],C[i]);
             fprintf(fp, "\n");
         }
     // CERRAMOS EL ARCHIVO 
