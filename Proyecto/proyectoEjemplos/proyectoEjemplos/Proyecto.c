@@ -61,7 +61,7 @@ void splitChannels(char *Img)
 
     for (int i = 0; i < imaSize; i++)
     {
-        // CHARS ENTEROS SIN SIGNO j
+        // CHARS ENTEROS SIN SIGNO 
         unsigned char r = srcIma[i * channels + 0];
         unsigned char g = srcIma[i * channels + 1];
         unsigned char b = srcIma[i * channels + 2];
@@ -83,7 +83,7 @@ void splitChannels(char *Img)
     CountingSort(imaRed, width, height, channels);
     // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
 
-
+/*
     // Saving image
     stbi_write_jpg("imaBlue.jpg", width, height, 3, imaBlue, 100);
     stbi_write_jpg("imaRed.jpg", width, height, 3, imaRed, 100);
@@ -93,21 +93,12 @@ void splitChannels(char *Img)
     stbi_image_free(imaBlue);  // free memory
     stbi_image_free(imaRed);   // free memory
     stbi_image_free(imaGreen); // free memory
+*/
 }
 
 // A LA FUNCION LE PASAMOS EL ARREGLO, RECORDANDO QUE EN C LOS ARREGLOS SIEMPRE SE PASAN POR REFERENCA, ES DECIR EL PUNTERO QUE APUNTA A ESTOS 
 void CountingSort(unsigned char A[], int width, int height, int channels) {
-    // n ES EL TAMAÑO DE A
     // BUSQUEDA DEL MAXIMO, EN ESTE CASO NO ES NECESARIO POR QUE NUESTRSO ARREGLOS SIEMPRE SERAN DE TAMAÑO 256 POR QUE SON LOS VALORES QUE PUEDEN TOMAR LOS ELEMENTOS RGB DE NUESTROS PIXELES
-    /*for (int j = 0; j < (width*height*channels); j++) {
-            printf("%hhu",A[j]);
-        }*/    /* int k = A[0];
-    for (int i = 1; i < n; i++) {
-        if (A[i] > k) {
-            k = A[i];
-        }
-    }*/
-
     int arrTam = 256;
     // NO ES NECESARIO UN CATEO POR QUE EN C PODEMOS ASIGNAR PUNTEROS DE TIPO VOID A UN PUNTERO DE TIPO UNSIGNED CHAR SIN NECESIDAD DE UN CASTEO EXPLICITO
     // USAMOS CALLOC PARA INICALIZAR EN 0 LOS ARREGLOS SIN LA NECESIDAD DE TENER QUE HACER UN FOR
@@ -157,17 +148,18 @@ void CountingSort(unsigned char A[], int width, int height, int channels) {
         for (int j = 0; j < (width*height); j++) {
             C[A[j * channels]] += 1;
         }
+        GuardarHistograma(B, C);
         // AQUI B SOLO ES UNA COPIA QUE NOS AYUDA A REPRESNETAR EL CSV, POR ESO NO MULTIPLICAMOS POR CHANNELS
-        for (int j = 0; j <= arrTam; j++) {
+        for (int j = 0; j < arrTam; j++) {
             B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
         }
         // CALCULAMOS LA FUNCION DE DISTRIBUCION ACUMULADA EN C
-        for (int i = 1; i <= arrTam+1; i++) {
+        for (int i = 1; i < arrTam; i++) {
             C[i] = C[i] + C[i - 1];
         }
         // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
-        Ecualizacion(C, width, height);
-        GuardarHistograma(C, B);
+        //Ecualizacion(C, width, height);
+        //GuardarHistograma(C, B);
         //B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
 
         // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
