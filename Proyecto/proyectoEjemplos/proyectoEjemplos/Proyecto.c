@@ -11,9 +11,11 @@
 double splitChannels();
 double CountingSort(unsigned char A[], int width, int height, int channels);
 void Ecualizacion(int C[], int width, int height);
-void GuardarHistograma(int C[], int B[]);
+void GuardarHistograma(int C[], int B[], char nombre_Archivo[]);
 double splitChannelsParalel(char *Img);
 double CountingSortParalel(unsigned char A[], int width, int height, int channels);
+void CountingSortImgComplet(unsigned char A[], int width, int height, int channels);
+
 
 int main(int argc, char *argv[])
 {
@@ -33,7 +35,6 @@ int main(int argc, char *argv[])
     printf("Tiempo de ejecucion en Secuencial: %lfs\n", timeEjecSecuencial);
     return 0;
 }
-
 double splitChannels(char *Img)
 {
     // OBTENERMOS EL VALOR QUE ALOGA A DONDE APUNTA IMG
@@ -81,21 +82,17 @@ double splitChannels(char *Img)
         }
         double tFinal = omp_get_wtime();
         double tTotal = tFinal - tInicial;
-        // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
         double tEjecucionSecuencial = CountingSort(imaRed, width, height, channels);
         tEjecucionSecuencial = tEjecucionSecuencial + tTotal;
-        // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
+        stbi_write_jpg("eqImage_secuencial.jpg", width, height, 3, imaRed, 100);
 
 
-        // Saving image
-        stbi_write_jpg("imaBlue.jpg", width, height, 3, imaBlue, 100);
-        stbi_write_jpg("imaRed.jpg", width, height, 3, imaRed, 100);
-        stbi_write_jpg("imaGreen.jpg", width, height, 3, imaGreen, 100);
+        CountingSortImgComplet(srcIma, width, height, channels);
+        stbi_write_jpg("Ecualizacion_completa.jpg", width, height, 3, srcIma, 100);
 
-        // Liberar la memoria de la imágen
-        stbi_image_free(imaBlue);  // free memory
-        stbi_image_free(imaRed);   // free memory
-        stbi_image_free(imaGreen); // free memory
+        // LIBERAMOS LA MENORIA DE LA IMAGEN 
+        stbi_image_free(imaRed);
+        stbi_image_free(srcIma);
         return tEjecucionSecuencial;
     }
     else if (channels == 1)
@@ -106,7 +103,7 @@ double splitChannels(char *Img)
         double tEjecucionSecuencial = CountingSort(srcIma, width, height, channels);
         // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
         // Saving image
-        stbi_write_jpg("eqIma.jpg", width, height, 1, srcIma, 100);
+        stbi_write_jpg("eqImage_parallel.jpg", width, height, 1, srcIma, 100);
 
         // Liberar la memoria de la imágen
         stbi_image_free(srcIma);  // free memory
@@ -119,7 +116,6 @@ double splitChannels(char *Img)
 
 
 }
-
 // A LA FUNCION LE PASAMOS EL ARREGLO, RECORDANDO QUE EN C LOS ARREGLOS SIEMPRE SE PASAN POR REFERENCA, ES DECIR EL PUNTERO QUE APUNTA A ESTOS 
 double CountingSort(unsigned char A[], int width, int height, int channels) {
     // BUSQUEDA DEL MAXIMO, EN ESTE CASO NO ES NECESARIO POR QUE NUESTRSO ARREGLOS SIEMPRE SERAN DE TAMAÑO 256 POR QUE SON LOS VALORES QUE PUEDEN TOMAR LOS ELEMENTOS RGB DE NUESTROS PIXELES
@@ -149,7 +145,7 @@ double CountingSort(unsigned char A[], int width, int height, int channels) {
         //Ecualizacion(C, width, height);
         tInicialCsv = omp_get_wtime();
         Ecualizacion(C, width, height);
-        GuardarHistograma(B, C);
+        GuardarHistograma(B, C, "histo_secuencial.csv");
         tFinalCsv = omp_get_wtime();
         // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
         /*
@@ -200,7 +196,7 @@ double CountingSort(unsigned char A[], int width, int height, int channels) {
         }
         tInicialCsv = omp_get_wtime();
         Ecualizacion(C, width, height);
-        GuardarHistograma(B, C);
+        GuardarHistograma(B, C, "histo_secuencial.csv");
         tFinalCsv = omp_get_wtime();
         // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
         //Ecualizacion(C, width, height);
@@ -242,7 +238,6 @@ double CountingSort(unsigned char A[], int width, int height, int channels) {
     }
     
 }   
-
 void Ecualizacion(int C[], int width, int height)
 {
     int acumMin = C[0];
@@ -254,11 +249,10 @@ void Ecualizacion(int C[], int width, int height)
     }
     return;
 } 
-
-void GuardarHistograma(int B[], int C[])
+void GuardarHistograma(int B[], int C[], char nombre_Archivo[])
 {
     // ABRIMOS EL ARCHIVO CON PERMISOS DE ESCRITURA
-    FILE *fp = fopen("file.csv", "w+"); // FOPEN SI NO EXISTE EL ARCHIVO LO CREA
+    FILE *fp = fopen(nombre_Archivo, "w+"); // FOPEN SI NO EXISTE EL ARCHIVO LO CREA
     
     if (fp == NULL)
     {
@@ -275,6 +269,7 @@ void GuardarHistograma(int B[], int C[])
     fclose(fp); 
     return;
 }
+
 
 //EMPEZAMOS A DESARROLLAR LAS FUNCIONES QUE VAN A USAR EL PARALELISMO
 double splitChannelsParalel(char *Img)
@@ -326,35 +321,22 @@ double splitChannelsParalel(char *Img)
         }
         double tFinal = omp_get_wtime();
         double tTotal = tFinal - tInicial;
-        // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
         double timeEjecParalela = CountingSortParalel(imaRed, width, height, channels);
         timeEjecParalela = timeEjecParalela + tTotal;
-        // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
+        
+        stbi_write_jpg("eqImage_parallel.jpg", width, height, 3, imaRed, 100);
+        stbi_image_free(imaRed);
 
-
-        // Saving image
-        stbi_write_jpg("imaBlue.jpg", width, height, 3, imaBlue, 100);
-        stbi_write_jpg("imaRed.jpg", width, height, 3, imaRed, 100);
-        stbi_write_jpg("imaGreen.jpg", width, height, 3, imaGreen, 100);
-
-        // Liberar la memoria de la imágen
-        stbi_image_free(imaBlue);  // free memory
-        stbi_image_free(imaRed);   // free memory
-        stbi_image_free(imaGreen); // free memory
         return timeEjecParalela;
     }
     else if (channels == 1)
     {
         printf("\nImagen cargada correctamente: %dx%d pixeles con %d canales.\n", width, height, channels);
-
-        // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
         double timeEjecParalela = CountingSortParalel(srcIma, width, height, channels);
-        // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
-        // Saving image
-        stbi_write_jpg("eqIma.jpg", width, height, 1, srcIma, 100);
 
-        // Liberar la memoria de la imágen
-        stbi_image_free(srcIma);  // free memory
+        stbi_write_jpg("eqImage_parallel.jpg", width, height, 1, srcIma, 100);
+        stbi_image_free(srcIma);  
+
         return timeEjecParalela;
     }
     else{
@@ -371,6 +353,7 @@ double CountingSortParalel(unsigned char A[], int width, int height, int channel
     // USAMOS CALLOC PARA INICALIZAR EN 0 LOS ARREGLOS SIN LA NECESIDAD DE TENER QUE HACER UN FOR
     int *C = (int*)calloc(arrTam, sizeof(int));
     int *B = (int*)calloc(arrTam, sizeof(int));
+
     if(channels == 1)
     {
         int num_procs = omp_get_num_procs();
@@ -406,7 +389,7 @@ double CountingSortParalel(unsigned char A[], int width, int height, int channel
         //Ecualizacion(C, width, height);
         tInicialCsv = omp_get_wtime();
         Ecualizacion(C, width, height);
-        GuardarHistograma(B, C);
+        GuardarHistograma(B, C, "histo_parallel.csv");
         tFinalCsv = omp_get_wtime();
         }
         #pragma omp barrier
@@ -455,14 +438,15 @@ double CountingSortParalel(unsigned char A[], int width, int height, int channel
         double tInicial = omp_get_wtime();
         #pragma omp parallel
     {
-        // NO HAY RIESGO DE CONDICIÓN DE CARRERA
+    
         #pragma omp for 
         for (int j = 0; j < (width*height); j++) {
-            C[A[j * channels]] += 1;
+            int idx = A[j * channels]; 
+            #pragma omp atomic
+            C[idx] += 1;
         }
         // AQUI B SOLO ES UNA COPIA QUE NOS AYUDA A REPRESNETAR EL CSV, POR ESO NO MULTIPLICAMOS POR CHANNELS
-        // NO HAY RIESGO DE CONDICIÓN DE CARRERA
-        #pragma omp for 
+        #pragma omp for
         for (int j = 0; j < arrTam; j++) {
             B[j] = C[j]; // IGUALAMOS B Y C PARA QUE NOS AYUDEN CON EL CSV
         }
@@ -477,7 +461,7 @@ double CountingSortParalel(unsigned char A[], int width, int height, int channel
         //B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
         tInicialCsv = omp_get_wtime();
         Ecualizacion(C, width, height);
-        GuardarHistograma(B, C);
+        GuardarHistograma(B, C, "histo_parallel.csv");
         tFinalCsv = omp_get_wtime();
         }
         // ESPERAMOS A QUE NOS ACABE DE DAR EL ECUALIZADO ESTE HILO
@@ -521,3 +505,27 @@ double CountingSortParalel(unsigned char A[], int width, int height, int channel
     }
     
 }   
+void CountingSortImgComplet(unsigned char A[], int width, int height, int channels){
+    int arrTam = 256;
+
+    for (int i = 0; i < 3; i++)
+    { 
+        int *B = (int*)calloc(arrTam, sizeof(int));
+        int *C = (int*)calloc(arrTam, sizeof(int));
+            for (int j = 0; j < (width*height); j++) {
+                C[A[j * channels + i]] += 1;
+            }
+            for (int j = 0; j < arrTam; j++) {
+                B[j] = C[j];
+            } 
+            for (int j = 1; j < arrTam; j++) {
+                C[j] = C[j] + C[j - 1];
+            }
+            Ecualizacion(C, width, height);
+            for (int j = 0; j < (width*height); j++) {
+                A[j * channels + i] = (unsigned char)C[A[j *channels + i]];
+            }
+        free(C);
+        free(B);
+    }
+}
