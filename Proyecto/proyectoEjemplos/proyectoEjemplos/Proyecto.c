@@ -27,9 +27,10 @@ int main(int argc, char *argv[])
     // EL ARGUMENTO 0 DE UN PROGRAMA ES EL PROPIO NOMBRE DEL EJECUTABLE, POR ESO NOS VAMOS AL INDICE UNO DE ARGV
     char *Img = argv[1]; 
     double timeEjecParalela = splitChannelsParalel(Img);
+    printf("Tiempo de ejecucion en Paralelo: %lfs\n",timeEjecParalela);
+    
     double timeEjecSecuencial = splitChannels(Img);
-    printf("%lfs\n",timeEjecParalela);
-    printf("%lfs\n", timeEjecSecuencial);
+    printf("Tiempo de ejecucion en Secuencial: %lfs\n", timeEjecSecuencial);
     return 0;
 }
 
@@ -40,8 +41,10 @@ double splitChannels(char *Img)
 
     int width, height, channels;
     //EL APUNTADOR *SCRIMA APUNTA AUN ARREGLO DE TAMAÑO WIDTH*HEIGHT*CHANNELS DE LOS CANALES QUE TIENE LA IMAGEN
+    double tCargaImgIn = omp_get_wtime();
     unsigned char *srcIma = stbi_load(srcPath, &width, &height, &channels, 0);
-
+    double tCargaImgFin = omp_get_wtime();
+    printf("El tiempo de carga de la imagen es: %lf\n", tCargaImgFin - tCargaImgIn);
     if (srcIma == NULL)
     {
         printf("No se pudo cargar la imagen %s :(\n\n\n", srcPath);
@@ -49,14 +52,14 @@ double splitChannels(char *Img)
     }
     else if(channels == 3)
     {
-        printf("\nImagen cargada correctamente: %dx%d pixeles con %d canales.\n", width, height, channels);
+        printf("Imagen cargada correctamente: %dx%d pixeles con %d canales.\n", width, height, channels);
         int imaSize = width * height;
 
         // SE MULTIPLICA POR EL VALOR DE CHANELS POR QUE AUNQUE SOLO VAMOS A TOMAR EN CUENTA EN CADA UNO DE LOS ARREGLOS EL VALOR CORRESPONDIENTE A CADA COLOR EN CADA PIXEL , CADA PIXEL TIENE 3 VALORES ES DECIR 3 BYTES Y DOS DE ESTOS LOS ESTABLECEREMOS EN 0 
         unsigned char *imaBlue = malloc(imaSize * channels); 
         unsigned char *imaRed = malloc(imaSize * channels);
         unsigned char *imaGreen = malloc(imaSize * channels);
-
+        double tInicial = omp_get_wtime();
         for (int i = 0; i < imaSize; i++)
         {
             // CHARS ENTEROS SIN SIGNO 
@@ -76,9 +79,11 @@ double splitChannels(char *Img)
             imaBlue[i * channels + 1] = 0;
             imaBlue[i * channels + 2] = b;
         }
-
+        double tFinal = omp_get_wtime();
+        double tTotal = tFinal - tInicial;
         // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
         double tEjecucionSecuencial = CountingSort(imaRed, width, height, channels);
+        tEjecucionSecuencial = tEjecucionSecuencial + tTotal;
         // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
 
 
@@ -279,7 +284,10 @@ double splitChannelsParalel(char *Img)
 
     int width, height, channels;
     //EL APUNTADOR *SCRIMA APUNTA AUN ARREGLO DE TAMAÑO WIDTH*HEIGHT*CHANNELS DE LOS CANALES QUE TIENE LA IMAGEN
+    double tCargaImgIn = omp_get_wtime();
     unsigned char *srcIma = stbi_load(srcPath, &width, &height, &channels, 0);
+    double tCargaImgFin = omp_get_wtime();
+    printf("El tiempo de carga de la imagen es: %lf\n", tCargaImgFin - tCargaImgIn);
 
     if (srcIma == NULL)
     {
@@ -288,13 +296,14 @@ double splitChannelsParalel(char *Img)
     }
     else if(channels == 3)
     {
-        printf("\nImagen cargada correctamente: %dx%d pixeles con %d canales.\n", width, height, channels);
+        printf("Imagen cargada correctamente: %dx%d pixeles con %d canales.\n", width, height, channels);
         int imaSize = width * height;
 
         // SE MULTIPLICA POR EL VALOR DE CHANELS POR QUE AUNQUE SOLO VAMOS A TOMAR EN CUENTA EN CADA UNO DE LOS ARREGLOS EL VALOR CORRESPONDIENTE A CADA COLOR EN CADA PIXEL , CADA PIXEL TIENE 3 VALORES ES DECIR 3 BYTES Y DOS DE ESTOS LOS ESTABLECEREMOS EN 0 
         unsigned char *imaBlue = malloc(imaSize * channels); 
         unsigned char *imaRed = malloc(imaSize * channels);
         unsigned char *imaGreen = malloc(imaSize * channels);
+        double tInicial = omp_get_wtime();
         #pragma omp parallel for
         for (int i = 0; i < imaSize; i++)
         {
@@ -315,9 +324,11 @@ double splitChannelsParalel(char *Img)
             imaBlue[i * channels + 1] = 0;
             imaBlue[i * channels + 2] = b;
         }
-
+        double tFinal = omp_get_wtime();
+        double tTotal = tFinal - tInicial;
         // CON EL ARREGLO IMARED YA PODEMOS OBTENER EL HISTOGRAMA APOYANDONOS DEL ALGORITMO COUNTING SORT
         double timeEjecParalela = CountingSortParalel(imaRed, width, height, channels);
+        timeEjecParalela = timeEjecParalela + tTotal;
         // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
 
 
