@@ -15,6 +15,8 @@ void GuardarHistograma(int C[], int B[], char nombre_Archivo[]);
 double splitChannelsParalel(char *Img);
 double CountingSortParalel(unsigned char A[], int width, int height, int channels);
 void CountingSortImgComplet(unsigned char A[], int width, int height, int channels);
+void Resultados(double tiempoSecuencial, double tiempoParalelo);
+
 
 
 int main(int argc, char *argv[])
@@ -28,13 +30,20 @@ int main(int argc, char *argv[])
     }
     // EL ARGUMENTO 0 DE UN PROGRAMA ES EL PROPIO NOMBRE DEL EJECUTABLE, POR ESO NOS VAMOS AL INDICE UNO DE ARGV
     char *Img = argv[1]; 
+    printf("-------------Resultados en Paralelo-------------\n");
     double timeEjecParalela = splitChannelsParalel(Img);
     printf("Tiempo de ejecucion en Paralelo: %lfs\n",timeEjecParalela);
     
+    printf("-------------Resultados en Secuencial-------------\n");
     double timeEjecSecuencial = splitChannels(Img);
     printf("Tiempo de ejecucion en Secuencial: %lfs\n", timeEjecSecuencial);
+    Resultados(timeEjecSecuencial, timeEjecParalela);
+
     return 0;
 }
+
+
+
 double splitChannels(char *Img)
 {
     // OBTENERMOS EL VALOR QUE ALOGA A DONDE APUNTA IMG
@@ -103,7 +112,7 @@ double splitChannels(char *Img)
         double tEjecucionSecuencial = CountingSort(srcIma, width, height, channels);
         // DESPUES DEL COUNTING SORT IMARED (EL ARREGLO), YA ESTA ECUALIZADO
         // Saving image
-        stbi_write_jpg("eqImage_parallel.jpg", width, height, 1, srcIma, 100);
+        stbi_write_jpg("eqImage_secuencial.jpg", width, height, 1, srcIma, 100);
 
         // Liberar la memoria de la imágen
         stbi_image_free(srcIma);  // free memory
@@ -148,18 +157,6 @@ double CountingSort(unsigned char A[], int width, int height, int channels) {
         GuardarHistograma(B, C, "histo_secuencial.csv");
         tFinalCsv = omp_get_wtime();
         // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
-        /*
-        // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
-        for (int j = arrTam; j >= 0; j--) {
-            B[C[A[j]] - 1] = (int)A[j];
-            C[A[j]] = C[A[j]] - 1;
-        }
-
-        // COPIAMOS LOS ELEMENTOS DE B -> A
-        for (int i = 0; i <= arrTam; i++) {
-            A[i] = (unsigned char)B[i];
-        }
-        */
         // ACTUALIZAMOS EL ARREGLO A PARA QUE SE ECUALICE 
         for (int i = 0; i < (width*height); i++) {
             A[i] = (unsigned char)C[A[i]];
@@ -199,23 +196,7 @@ double CountingSort(unsigned char A[], int width, int height, int channels) {
         GuardarHistograma(B, C, "histo_secuencial.csv");
         tFinalCsv = omp_get_wtime();
         // YA CON LA FUNCION DE DISTRIBUCION ACUMULADA ECUALIZAMOS Y GUARDAMOS LOS VALORES
-        //Ecualizacion(C, width, height);
-        //GuardarHistograma(C, B);
         //B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
-
-        /*
-        // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
-        // NO HAY NECESIDAD DE CASTEO AQUI
-        for (int j = (width*height) - 1 ; j >= 0; j--) {
-            B[C[A[j * channels]] - 1] = (int)A[j * channels];
-            C[A[j * channels]] -= 1;
-        }
-
-        // COPIAMOS LOS ELEMENTOS DE B -> A TENEMOS QUE CASTEAR, NO SON EL MISMO TIPO DE DATO
-        for (int i = 0; i < (width*height); i++) {
-            A[i * channels] = (unsigned char)B[i];
-        }
-        */
         // ACTUALIZAMOS EL ARREGLO A PARA QUE SE ECUALICE 
         for (int i = 0; i < (width*height); i++) {
             A[i * channels] = (unsigned char)C[A[i*channels]];
@@ -394,20 +375,7 @@ double CountingSortParalel(unsigned char A[], int width, int height, int channel
         }
         #pragma omp barrier
         // B ES NUESTRO HISTOGRAMA, C ES NUESTRO ECUALIZADO
-        /*
-        // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
-        for (int j = arrTam; j >= 0; j--) {
-            B[C[A[j]] - 1] = (int)A[j];
-            C[A[j]] = C[A[j]] - 1;
-        }
-
-        // COPIAMOS LOS ELEMENTOS DE B -> A
-        for (int i = 0; i <= arrTam; i++) {
-            A[i] = (unsigned char)B[i];
-        }
-        */
         // ACTUALIZAMOS EL ARREGLO A PARA QUE SE ECUALICE 
-        // NO HAY RIESGO DE CONDICIÓN DE CARRERA
         //tInicial = omp_get_wtime();
         #pragma omp for
         for (int i = 0; i < (width*height); i++) {
@@ -466,19 +434,6 @@ double CountingSortParalel(unsigned char A[], int width, int height, int channel
         }
         // ESPERAMOS A QUE NOS ACABE DE DAR EL ECUALIZADO ESTE HILO
         #pragma omp barrier
-        /*
-        // COLOCAMOS EN B LOS NUEVOS VALORES DEL HISTOGRAMA YA EUCALIZADO 
-        // NO HAY NECESIDAD DE CASTEO AQUI
-        for (int j = (width*height) - 1 ; j >= 0; j--) {
-            B[C[A[j * channels]] - 1] = (int)A[j * channels];
-            C[A[j * channels]] -= 1;
-        }
-
-        // COPIAMOS LOS ELEMENTOS DE B -> A TENEMOS QUE CASTEAR, NO SON EL MISMO TIPO DE DATO
-        for (int i = 0; i < (width*height); i++) {
-            A[i * channels] = (unsigned char)B[i];
-        }
-        */
         // ACTUALIZAMOS EL ARREGLO A PARA QUE SE ECUALICE 
         // NO HAY RIESGO DE CONDICIÓN DE CARRERA
         //tInicial = omp_get_wtime();
@@ -529,3 +484,17 @@ void CountingSortImgComplet(unsigned char A[], int width, int height, int channe
         free(B);
     }
 }
+
+void Resultados(double tiempoSecuencial, double tiempoParalelo)
+{
+    int num_procs = omp_get_num_procs();
+    double speedUp = tiempoSecuencial / tiempoParalelo;
+    double Eficiencia = speedUp / (double)num_procs;
+    double OverHead = tiempoParalelo - (tiempoSecuencial/(double)num_procs);
+
+    printf("-----------------------------------------------\n");
+    printf("Se cuenta con un SpeedUp de: %f \n", speedUp);
+    printf("Se presento una Eficiencia del %f%% \n", Eficiencia*100);
+    printf("OverHead: %f", OverHead);
+}
+
